@@ -2,16 +2,56 @@
 
 ## Current Focus
 
-**Workflow Skills Revision - Ready for Testing**
+**Workflow Skills Revision - project-spinup Complete**
 
-Next step: Test the three-skill sequence (project-brief-writer → tech-stack-advisor → deployment-advisor) with a real project.
+Four skills now updated. Ready to test project-spinup, then continue rollout.
 
 Plan file: `.docs/cozy-dazzling-pixel.md`
 Decisions file: `docs/workflow-refinement.md` (v2 - finalized)
 
 ---
 
-## Session 2025-12-10 (continued): JSON Handoffs Implemented
+## Session 2025-12-10 (latest): project-spinup Refined
+
+### Completed
+
+9. **project-spinup** - Full revision per planning documents
+   - Added hard-boundaries block (EXECUTOR role, not advisor)
+   - Phase 0: Loads `infrastructure.services`, `credentials.api_endpoints`, `established_choices`
+   - Phase 1: Reads upstream JSON handoffs (brief.json, tech-stack-decision.json, deployment-strategy.json)
+   - Phase 3: Added Approval Gate (Planning Mindset)
+   - Output: `.docs/project-foundation.json` (new JSON handoff, schema extrapolated from pattern)
+   - SKILL.md: 663 → 492 lines (under 500 guideline)
+   - README.md updated to v2.0
+
+---
+
+## Session 2025-12-10 (earlier): Default Project Profile Added
+
+### Completed
+
+8. **tech-stack-advisor** - Added `<default-project-profile>` section
+   - Default assumptions: single-user, private access, web-based
+   - Explicitly surfaced early so user can override
+   - Override triggers for keywords like "public", "SaaS", "team", etc.
+   - Reduces token burn by not asking redundant questions
+
+---
+
+## Session 2025-12-10 (continued): Phase 0 Environment Loading Added
+
+### Completed
+
+7. **All three skills now load ~/.claude/environment.json in Phase 0**
+   - project-brief-writer: Empty access `[]` (intentionally neutral)
+   - tech-stack-advisor: Loads `database_options`, `skill_guidance.preferences`
+   - deployment-advisor: Loads `deployment_options`, `infrastructure.vps`, `storage_options`, `skill_guidance.*`
+
+This ensures skills leverage existing infrastructure context instead of asking redundant questions.
+
+---
+
+## Session 2025-12-10 (earlier): JSON Handoffs + Progressive Disclosure Fix
 
 ### Completed
 
@@ -20,15 +60,15 @@ Decisions file: `docs/workflow-refinement.md` (v2 - finalized)
    - Full JSON schema with rationale, problem, goals, features, use_cases, etc.
    - Deployment intent as enum: `localhost | public | tbd`
 
-5. **tech-stack-advisor** - Updated for JSON handoffs
+5. **tech-stack-advisor** - Updated for JSON handoffs + progressive disclosure
    - Input: `.docs/brief.json`
    - Output: `.docs/tech-stack-decision.json`
-   - JSON schema with decisions array, stack_summary, alternatives_considered
+   - Reduced: 717 → 440 lines (references DECISION-FRAMEWORKS.md)
 
-6. **deployment-advisor** - Updated for JSON handoffs
+6. **deployment-advisor** - Updated for JSON handoffs + progressive disclosure
    - Input: `.docs/tech-stack-decision.json`
    - Output: `.docs/deployment-strategy.json`
-   - JSON schema with hosting config, deployment_workflow, cost, scaling_path
+   - Reduced: 721 → 407 lines (references HOSTING-TEMPLATES.md)
 
 ---
 
@@ -66,16 +106,16 @@ Decisions file: `docs/workflow-refinement.md` (v2 - finalized)
 
 ## Implementation Progress
 
-| Skill | Phase 0 | JSON Handoff | Notes |
-|-------|---------|--------------|-------|
-| project-brief-writer | ✅ Done | ✅ Done | Outputs `.docs/brief.json` |
-| tech-stack-advisor | ✅ Done | ✅ Done | Outputs `.docs/tech-stack-decision.json` |
-| deployment-advisor | ✅ Done | ✅ Done | Outputs `.docs/deployment-strategy.json` |
-| project-spinup | ⏳ Pending | ⏳ Pending | After testing |
-| test-orchestrator | ⏳ Pending | ⏳ Pending | After testing |
-| deploy-guide | ⏳ Pending | ⏳ Pending | After testing |
-| ci-cd-implement | ⏳ Pending | ⏳ Pending | After testing |
-| workflow-status | ⏳ Pending | N/A | Read-only, needs to read JSON |
+| Skill | Phase 0 | JSON Handoff | Hard Boundaries | Notes |
+|-------|---------|--------------|-----------------|-------|
+| project-brief-writer | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/brief.json` |
+| tech-stack-advisor | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/tech-stack-decision.json` |
+| deployment-advisor | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/deployment-strategy.json` |
+| project-spinup | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/project-foundation.json` |
+| test-orchestrator | ⏳ Pending | ⏳ Pending | ⏳ Pending | Next |
+| deploy-guide | ⏳ Pending | ⏳ Pending | ⏳ Pending | After test-orchestrator |
+| ci-cd-implement | ⏳ Pending | ⏳ Pending | ⏳ Pending | After deploy-guide |
+| workflow-status | ⏳ Pending | N/A | N/A | Read-only, needs to read JSON |
 
 ---
 
@@ -126,12 +166,17 @@ Read for context:
 - .claude/session-context.md (current state)
 - docs/workflow-refinement.md (finalized decisions)
 
-Current step: Test the three-skill sequence with a real project.
-- project-brief-writer → .docs/brief.json
-- tech-stack-advisor → .docs/tech-stack-decision.json
-- deployment-advisor → .docs/deployment-strategy.json
+Status: Four skills fully updated:
+- project-brief-writer → brief.json
+- tech-stack-advisor → tech-stack-decision.json
+- deployment-advisor → deployment-strategy.json
+- project-spinup → project-foundation.json
 
-After testing: Roll out JSON handoffs to remaining skills per .docs/cozy-dazzling-pixel.md
+Next: Roll out to remaining skills per .docs/cozy-dazzling-pixel.md
+- test-orchestrator
+- deploy-guide
+- ci-cd-implement
+- workflow-status
 ```
 
 ---
@@ -140,5 +185,5 @@ After testing: Roll out JSON handoffs to remaining skills per .docs/cozy-dazzlin
 
 - Session: 2025-12-10
 - All architectural decisions finalized
-- First three skills updated for JSON handoffs
-- Ready for end-to-end testing
+- Four skills fully updated (JSON + Phase 0 + hard boundaries)
+- User testing project-spinup next
