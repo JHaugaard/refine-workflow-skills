@@ -5,14 +5,46 @@ description: "Transform rough project ideas into problem-focused briefs that pre
 
 # project-brief-writer
 
+<hard-boundaries>
+BEFORE ANY OUTPUT, VERIFY COMPLIANCE:
+
+I will NOT suggest technologies, frameworks, or libraries — that is tech-stack-advisor's scope.
+I will NOT suggest deployment platforms or hosting — that is deployment-advisor's scope.
+I will NOT provide architecture patterns or implementation details — that is project-spinup's scope.
+
+MY SCOPE IS LIMITED TO:
+- Understanding WHAT the user wants to build
+- Understanding WHY they want to build it
+- Capturing deployment INTENT (localhost vs public) — NOT platform
+- Recording user-stated preferences as NON-BINDING reference
+- Producing a NEUTRAL handoff document
+
+If a user provides tech/platform specifics, I will:
+1. Acknowledge without endorsing
+2. Record in "user_stated_preferences" section (non-binding)
+3. Redirect conversation back to WHAT and WHY
+
+If I catch myself drifting into HOW territory, I will STOP and refocus.
+</hard-boundaries>
+
+---
+
 <purpose>
-Transform rough project ideas into problem-focused briefs that preserve learning opportunities and feed into the Skills workflow (tech-stack-advisor -> deployment-advisor -> project-spinup).
+Transform rough project ideas into opportunity-focused briefs through deliberate exploration. Uses a Planning Mindset approach: Discovery Protocol to understand, Framing Exercise to reflect back, and Approval Gates to ensure alignment before proceeding.
 </purpose>
 
 <output>
+Primary (machine-readable):
+- .docs/brief.json (structured handoff for downstream skills)
+
+Secondary (human-readable):
 - .docs/PROJECT-MODE.md (workflow mode declaration)
-- .docs/brief-[project-name].md (polished project brief)
-A polished project brief in narrative/bullet format describing problem, goals, requirements, and deployment intent WITHOUT technology stack, architecture, deployment platform specifics, or implementation details. This brief must remain NEUTRAL so downstream skills (tech-stack-advisor, deployment-advisor) can perform their advisory roles without bias.
+- .docs/brief-[project-name].md (narrative summary)
+
+Contributes to:
+- .docs/DECISIONS.json (LOCKED decisions from this phase)
+
+The brief captures WHAT and WHY without constraining HOW. Downstream skills receive unbiased input.
 </output>
 
 ---
@@ -98,362 +130,332 @@ This file will guide the entire Skills workflow.
 </confirmation>
 </phase>
 
-<phase id="2" name="present-template">
-<action>Present template for user to fill in.</action>
+<phase id="2" name="discovery-protocol">
+<action>Understand the project through conversational exploration, not template-filling.</action>
 
-<template name="project-brief-input">
-# Project Brief Template
+<planning-mindset>
+This phase embodies Planning Mindset: exploration before commitment, questions as conversation starters not checklists, organic flow over rigid structure.
+</planning-mindset>
 
-## 1. Problem Statement
-[What problem are you trying to solve? Why does it need solving?]
+<discovery-questions>
+Ask these three questions to open the conversation. Wait for responses before continuing.
 
-## 2. Project Goals
-[What do you want to achieve? What does success look like?]
+1. **Scope**: "What's in scope for this project, and what's explicitly out?"
+   - Intent: Establish boundaries early
+   - Listen for: Features included, features excluded, scale expectations
 
-## 3. High-Level Features
-[What should the project do? List capabilities, not implementation details]
-- Feature 1:
-- Feature 2:
-- Feature 3:
+2. **Opportunity**: "What becomes possible for you by building this? What will you learn or be able to do?"
+   - Intent: Understand the journey-focused value (not pain points)
+   - Listen for: Learning goals, capabilities gained, exploration interests
 
-## 4. Constraints
-[What limitations exist? Timeline, budget, infrastructure, etc.]
+3. **Curiosity Prompt**: "What else should I know that I haven't asked?"
+   - Intent: Surface unstated context, preferences, or concerns
+   - Listen for: Hidden assumptions, tech preferences (record but don't endorse), deployment hints
+</discovery-questions>
 
-## 5. Success Criteria
-[How will you know the project succeeded?]
+<organic-flow>
+After the initial three questions, follow-up questions emerge naturally from the conversation. Do NOT use batched triggers. Instead:
 
-## 6. Use Cases
-[Describe 2-3 scenarios of how this will be used]
+- If scope is unclear, ask clarifying questions about boundaries
+- If opportunity is vague, probe what success would feel like (not metrics)
+- If curiosity prompt reveals tech preferences, acknowledge and record without endorsing
+- If deployment intent is mentioned, capture as category (localhost/public/TBD) only
 
-## 7. Known Edge Cases
-[What unusual situations should be handled?]
+Questions are conversation starters, not checklists. The goal is understanding, not form completion.
+</organic-flow>
 
-## 8. Explicitly Out of Scope
-[What will NOT be included in initial version?]
+<what-to-capture>
+During discovery, mentally note (for later brief generation):
 
-## 9. Deployment Intent
-
-[Where do you expect this to run? Choose one - DO NOT specify platforms or hosting providers]
-
-- [ ] Localhost only (runs on my machine)
-- [ ] Public (accessible to others online)
-- [ ] TBD (undecided)
-
-## 10. Learning Goals (Optional)
-
-[What do you want to learn from this project?]
-
-## 11. User Stated Preferences (Optional - Reference Only)
-
-[If you have specific technology or platform preferences, note them here. These will be recorded as stated preferences for downstream skills to consider, but will NOT constrain their recommendations.]
-</template>
-
-<instruction-to-user>
-Please fill in this template with your project idea. Focus on WHAT you want to build and WHY, not HOW to build it. Leave sections blank if you haven't thought about them yet - I'll ask follow-up questions.
-
-**Important:** Keep your responses technology-neutral. If you have preferences for specific technologies or platforms, note them in the "User Stated Preferences" section - they'll be forwarded to downstream skills for consideration but won't lock in decisions.
-</instruction-to-user>
+- Project name/working title
+- Core features (WHAT it does)
+- Value proposition (WHY it matters to user)
+- Deployment intent (localhost vs public vs TBD)
+- Learning goals (if mentioned)
+- User-stated preferences (tech/platform — record verbatim, non-binding)
+- Out of scope items
+</what-to-capture>
 </phase>
 
-<phase id="3" name="analyze-input">
-<action>Analyze user responses for completeness, over-specification, and appropriate detail level.</action>
+<phase id="3" name="framing-exercise">
+<action>Reflect understanding back through the user's preferred framing blend. Pause for confirmation.</action>
 
-<checks>
-- Completeness: Which sections are empty or vague?
-- Over-specification: Are they describing implementation instead of requirements?
-- Tech mentions: Did they mention specific technologies in requirements sections?
-- Appropriate detail: Too vague (needs expansion) or too detailed (bypasses learning)?
-- Deployment intent: Is it clear where this will run?
-</checks>
+<framing-blend>
+Present the project through three lenses combined into a single reflection:
 
-<detection-rules name="over-specification">
-<indicators>
-- Specific programming languages, frameworks, or libraries in requirements
-- Architecture descriptions (microservices, MVC, etc.)
-- Implementation patterns or design patterns
-- Specific APIs or third-party services (unless core to problem)
-- Database schemas or data models
-- Deployment platforms or hosting providers (AWS, Vercel, fly.io, Cloudflare, etc.)
-- Infrastructure specifics (Docker, Kubernetes, serverless, etc.)
-- CI/CD tools or automation platforms
-</indicators>
+1. **Solution-Centric** (primary): What gets built — the tangible thing
+2. **Outcome-Centric** (secondary): What it enables — without rigid success metrics
+3. **Exploration-Centric** (added): What you'll learn or discover along the way
 
-<examples>
-<bad>Build a REST API using Express.js with JWT authentication</bad>
-<good>Build an API that allows authenticated users to access their data</good>
+Do NOT present multiple framing options for user to choose. Use this blend as the default.
+</framing-blend>
 
-<bad>Use React with Redux for state management and Material-UI components</bad>
-<good>Build a user interface with good visual design and responsive layout</good>
+<reflection-format>
+"So you're looking to build **[Solution: what gets built]** — something that lets you **[Outcome: what it enables]** and gives you a chance to **[Exploration: what you'll learn/discover]**.
 
-<bad>Deploy to Vercel with a PostgreSQL database on Supabase</bad>
-<good>Needs to be publicly accessible with persistent data storage</good>
+Does this capture it?"
+</reflection-format>
 
-<bad>Host on my VPS with Docker and Caddy</bad>
-<good>Will run on my own server (public deployment)</good>
-</examples>
+<understanding-gate>
+APPROVAL GATE: Wait for explicit signal before proceeding.
+
+Prompt: "Does this capture it?"
+
+Expected signals:
+- 🟢 Green: "Good" / "Yes" / "Continue" / "👍" → Proceed to brief generation
+- 🟡 Yellow: "Yes, but..." / "Almost" / "Tweak X" → Adjust framing, re-confirm
+- 🔴 Red: "Wait" / "Back up" / "Let's rethink" → Return to discovery
+
+NEVER proceed on silence. Always wait for explicit confirmation.
+</understanding-gate>
+</phase>
+
+<phase id="4" name="over-specification-check">
+<action>Check for and redirect any technology or platform specifics that slipped through.</action>
+
+<detection-rules>
+If user input includes:
+
+- Programming languages, frameworks, or libraries → Record as preference, redirect to WHAT
+- Architecture patterns (microservices, MVC, etc.) → Note interest, keep brief neutral
+- Deployment platforms (AWS, Vercel, fly.io, etc.) → Record as preference, capture intent only
+- Infrastructure specifics (Docker, Kubernetes, etc.) → Record as preference, stay neutral
+
 </detection-rules>
 
-<response-if-overspecified>
-I notice you're describing HOW to implement (e.g., 'using Express.js'). For this brief, let's focus on WHAT you need (e.g., 'an API that handles user requests'). The tech-stack-advisor skill will help you explore implementation options later. Would you like to rephrase this as a requirement without specifying the technology?
-</response-if-overspecified>
+<response-pattern>
+"I'll record [specific tech/platform] as a stated preference — downstream skills will see it but aren't bound by it. For the brief, I'll describe what you need without specifying the technology. Does that work?"
+</response-pattern>
 
-<response-if-tech-in-requirements>
-I see you've mentioned [specific technology]. I'll record that as a stated preference in the handoff document. The requirements will stay technology-neutral so downstream skills can provide unbiased recommendations - but your preference will be visible for them to consider. Does that work?
-</response-if-tech-in-requirements>
+<examples>
+<input>Build a REST API using Express.js</input>
+<response>I'll note "Express.js" as a preference. For the brief: "Build an API that allows authenticated access to data." Sound right?</response>
 
-<response-if-deployment-specified>
-I see you've mentioned a specific deployment platform/infrastructure [e.g., 'Vercel', 'Docker', 'AWS']. For this brief, I'll capture your deployment intent (localhost vs. public) and record your platform preference separately. The deployment-advisor skill will help evaluate whether that's the best fit for your needs. Does that work?
-</response-if-deployment-specified>
-</phase>
-
-<phase id="4" name="clarifying-questions">
-<action>Ask 2-3 batches of questions based on gaps. Don't ask everything at once.</action>
-
-<batch id="1" name="problem-clarity" trigger="Problem Statement is vague">
-- Who experiences this problem?
-- What's the current workaround or manual process?
-- What's the impact of NOT solving this problem?
-- Is this a new problem or improving an existing solution?
-</batch>
-
-<batch id="2" name="scope-features" trigger="Features are unclear">
-- What's the minimum set of features for this to be useful?
-- Are there features that are "nice to have" vs "must have"?
-- What should users be able to do that they can't do now?
-- Are there features you've explicitly decided NOT to include?
-</batch>
-
-<batch id="3" name="users-stakeholders" trigger="Use Cases are weak">
-- Who is the primary user?
-- Are there different types of users with different needs?
-- What are the most common scenarios where this will be used?
-- What are the edge cases or unusual situations to consider?
-</batch>
-
-<batch id="4" name="success-constraints" trigger="Success Criteria missing">
-- How will you measure success?
-- What timeline are you working with?
-- Are there budget constraints?
-- What existing infrastructure or tools must this work with?
-</batch>
-
-<batch id="5" name="deployment-intent" trigger="Deployment Intent unclear">
-- Will this run only on your computer (localhost)?
-- Does this need to be accessible to others online?
-- Is this primarily for learning, or do you need it in production?
-</batch>
-
-<batch id="6" name="learning-goals" trigger="Learning mode selected or learning goals unclear">
-- Is this primarily a learning project or a delivery project?
-- What specific technologies or concepts do you want to learn?
-- How much time can you dedicate to learning vs building?
-</batch>
-
-<strategy>
-- Ask one batch at a time
-- Wait for responses before next batch
-- Skip batches if already answered
-- Use conversational tone
-</strategy>
+<input>Deploy to my VPS with Docker</input>
+<response>I'll capture "VPS with Docker" as your stated preference. The brief will show deployment intent as "Public" and deployment-advisor will evaluate your preference alongside alternatives.</response>
+</examples>
 </phase>
 
 <phase id="5" name="generate-brief">
-<action>Generate polished brief after gathering sufficient information.</action>
+<action>Generate both JSON handoff (primary) and markdown summary (secondary).</action>
 
-<output-template>
+<json-handoff-template>
+Generate .docs/brief.json with this structure:
+
+```json
+{
+  "document_type": "brief",
+  "version": "1.0",
+  "created": "[ISO date]",
+  "project": "[project-name]",
+  "mode": "[LEARNING/DELIVERY/BALANCED]",
+
+  "summary": {
+    "name": "[Project Name]",
+    "description": "[1-2 sentence description]",
+    "deployment_intent": "[localhost/public/TBD]"
+  },
+
+  "framing": {
+    "solution": "[What gets built]",
+    "outcome": "[What it enables]",
+    "exploration": "[What user learns/discovers]"
+  },
+
+  "scope": {
+    "in_scope": [
+      "[Feature/capability 1]",
+      "[Feature/capability 2]"
+    ],
+    "out_of_scope": [
+      "[Explicitly excluded item 1]",
+      "[Explicitly excluded item 2]"
+    ]
+  },
+
+  "learning_goals": [
+    "[Learning goal 1]",
+    "[Learning goal 2]"
+  ],
+
+  "decisions": [
+    {
+      "id": "PBW-001",
+      "category": "deployment_intent",
+      "decision": "[localhost/public/TBD]",
+      "status": "LOCKED",
+      "rationale": "[Why this intent was chosen]"
+    },
+    {
+      "id": "PBW-002",
+      "category": "scope",
+      "decision": "[Key scope decision]",
+      "status": "LOCKED",
+      "rationale": "[Why this boundary was set]"
+    }
+  ],
+
+  "user_stated_preferences": {
+    "technology": ["[Tech preference if stated]"],
+    "platform": ["[Platform preference if stated]"],
+    "binding": false,
+    "note": "These are starting points for downstream skills, not constraints"
+  },
+
+  "rationale_capture": {
+    "key_decisions": [
+      {
+        "topic": "[Decision topic]",
+        "chosen": "[What was decided]",
+        "why": "[Reasoning]",
+        "alternatives_considered": ["[Alternative 1]", "[Alternative 2]"],
+        "reversibility": "[easy/moderate/difficult]"
+      }
+    ]
+  },
+
+  "handoff_to": ["tech-stack-advisor"]
+}
+```
+</json-handoff-template>
+
+<markdown-summary-template>
+Also generate .docs/brief-[project-name].md as human-readable summary:
+
 # [Project Name] - Project Brief
 
-## Project Overview
-[1-2 paragraph narrative description]
+## Overview
+
+[1-2 paragraph narrative combining Solution + Outcome + Exploration framing]
 
 ---
 
-## Problem Statement
-[Clear description of problem being solved]
+## What Gets Built
 
-**Why This Matters:**
-- [Impact point 1]
-- [Impact point 2]
-- [Impact point 3]
+[Core features as narrative, technology-neutral]
 
----
+**Key Capabilities:**
 
-## Project Goals
-
-### Primary Goal
-[Main objective in one sentence]
-
-### Secondary Goals
-- [Goal 1]
-- [Goal 2]
-- [Goal 3]
+- [Capability 1]
+- [Capability 2]
+- [Capability 3]
 
 ---
 
-## Functional Requirements
+## What's Out of Scope
 
-### Core Functionality
-[Narrative description of what system should do]
-
-**Key Features:**
-- **[Feature 1]**: [Description of what it does and why]
-- **[Feature 2]**: [Description of what it does and why]
-- **[Feature 3]**: [Description of what it does and why]
-
-### User Experience Expectations
-[How users should interact with system, without specifying UI technology]
-
----
-
-## Success Criteria
-
-**Essential Success Metrics:**
-1. **[Metric 1]**: [How to measure]
-2. **[Metric 2]**: [How to measure]
-3. **[Metric 3]**: [How to measure]
-
-**User Satisfaction Indicators:**
-- [Indicator 1]
-- [Indicator 2]
-
----
-
-## Use Cases & Scenarios
-
-### Use Case 1: [Name]
-**Scenario**: [Describe situation]
-
-**Expected behavior**:
-- [Step or outcome 1]
-- [Step or outcome 2]
-- [Step or outcome 3]
-
-### Use Case 2: [Name]
-**Scenario**: [Describe situation]
-
-**Expected behavior**:
-- [Step or outcome 1]
-- [Step or outcome 2]
-
----
-
-## Edge Cases to Handle
-
-### [Edge Case Category 1]
-**Problem**: [What unusual situation might occur]
-**Solution**: [How system should handle it]
-
-### [Edge Case Category 2]
-**Problem**: [What unusual situation might occur]
-**Solution**: [How system should handle it]
-
----
-
-## Constraints & Assumptions
-
-### Constraints
-- **Timeline**: [If specified]
-- **Budget**: [If specified]
-- **Infrastructure**: [Existing systems to work with]
-
-### Assumptions
-- [Assumption 1]
-- [Assumption 2]
-- [Assumption 3]
-
----
-
-## Out of Scope (For Initial Version)
-
-The following features are explicitly not included:
-- [Feature that won't be built initially]
-- [Feature that won't be built initially]
-- [Feature that won't be built initially]
+- [Excluded item 1]
+- [Excluded item 2]
 
 ---
 
 ## Deployment Intent
 
-**Target Environment:** [Localhost / Public / TBD]
-
-*No platform or infrastructure details included - deployment-advisor will provide recommendations.*
+**Target:** [Localhost / Public / TBD]
 
 ---
 
-## Learning Goals (If Applicable)
+## Learning Goals
 
-**What I Want to Learn:**
 - [Learning goal 1]
 - [Learning goal 2]
 
-**Skills to Practice:**
-- [Skill 1]
-- [Skill 2]
+---
+
+## User Stated Preferences (Non-Binding)
+
+**Technology:** [Preferences or "None stated"]
+**Platform:** [Preferences or "None stated"]
+
+*These preferences are visible to downstream skills but do not constrain their recommendations.*
 
 ---
 
-## User Stated Preferences (Reference Only)
+## Decisions Made
 
-> **IMPORTANT FOR DOWNSTREAM SKILLS:** The preferences below are user-stated starting points, NOT requirements. Downstream skills (tech-stack-advisor, deployment-advisor) should acknowledge these preferences but provide unbiased recommendations that may include alternatives. Do not treat these as constraints.
-
-**Technology Preferences:** [User's tech preferences if stated, otherwise "None stated"]
-
-**Platform/Deployment Preferences:** [User's platform preferences if stated, otherwise "None stated"]
+| Decision | Chosen | Rationale |
+|----------|--------|-----------|
+| Deployment Intent | [choice] | [why] |
+| [Other key decision] | [choice] | [why] |
 
 ---
 
 ## Next Steps
 
-Invoke **tech-stack-advisor** to explore technology options for this project.
-</output-template>
+Invoke **tech-stack-advisor** to explore technology options.
+</markdown-summary-template>
 
-<formatting-rules>
-- Use narrative prose in overviews and descriptions
-- Use bullet points for lists
-- Use bold for emphasis on key terms
-- Keep sections clear and scannable
-- NO technology specifications in requirements sections
-- NO platform or hosting specifics in deployment intent
-- NO implementation details or "how-to" instructions
-- User preferences go ONLY in "User Stated Preferences" section with clear labeling
-</formatting-rules>
+<decisions-json-contribution>
+Also update .docs/DECISIONS.json (create if doesn't exist):
+
+Add entries for each LOCKED decision from this phase. These decisions become authoritative for downstream skills.
+</decisions-json-contribution>
 </phase>
 
 <phase id="6" name="save-brief">
-<action>Save the brief to .docs/ subdirectory.</action>
+<action>Save all outputs to .docs/ subdirectory.</action>
 
-<save-location>.docs/brief-[project-name].md</save-location>
+<files-to-create>
+1. .docs/brief.json (primary handoff — machine-readable)
+2. .docs/brief-[project-name].md (secondary — human-readable summary)
+3. .docs/DECISIONS.json (create or update with LOCKED decisions from this phase)
+</files-to-create>
 
-<prompt-to-user>
-I'll save this brief to `.docs/brief-[project-name].md`.
-
-Does this location work, or would you prefer a different name?
-</prompt-to-user>
+<save-confirmation>
+Created:
+- .docs/brief.json (structured handoff for downstream skills)
+- .docs/brief-[project-name].md (human-readable summary)
+- Updated .docs/DECISIONS.json with [N] locked decisions
+</save-confirmation>
 </phase>
 
-<phase id="7" name="confirm-completion">
-<action>Confirm save and show workflow status with termination point guidance.</action>
+<phase id="7" name="handoff-gate">
+<action>Present completion summary and wait for explicit approval before handoff.</action>
 
-<confirmation-template>
-Saved project brief to .docs/brief-[project-name].md
-Created workflow mode in .docs/PROJECT-MODE.md
+<completion-summary>
+## Brief Complete
+
+**Project:** [project-name]
+**Mode:** [LEARNING/DELIVERY/BALANCED]
+**Deployment Intent:** [localhost/public/TBD]
+
+**Files Created:**
+
+- .docs/brief.json
+- .docs/brief-[project-name].md
+- .docs/DECISIONS.json (updated)
+
+**Decisions Locked:**
+
+- Deployment Intent: [choice] — [rationale]
+- [Other key decisions]
 
 ---
 
-## Workflow Status
+**Next phase:** tech-stack-advisor
 
-**Phase 0: Project Brief** COMPLETE
-- PROJECT-MODE.md created (Mode: [mode])
-- Project brief refined and polished
-- Deployment intent: [localhost/public/TBD]
-- User preferences: [captured/none stated]
+Ready to proceed?
+</completion-summary>
 
-**Next:** Invoke **tech-stack-advisor** to explore technology options.
+<handoff-gate>
+APPROVAL GATE: Wait for explicit signal before suggesting next skill.
 
----
+Prompt: "Ready to proceed?"
 
-Would you like to invoke tech-stack-advisor now, or review/refine the brief first?
-</confirmation-template>
+Expected signals:
+
+- 🟢 Green: "Good" / "Yes" / "Continue" → Suggest invoking tech-stack-advisor
+- 🟡 Yellow: "Yes, but..." / "Let me review" → Pause for user review
+- 🔴 Red: "Wait" / "Back up" → Return to earlier phase as needed
+
+NEVER auto-advance to tech-stack-advisor. Always wait for explicit confirmation.
+</handoff-gate>
+
+<on-green-signal>
+Great! To continue the workflow, invoke **tech-stack-advisor**.
+
+The handoff documents are ready in .docs/ — tech-stack-advisor will read them automatically.
+</on-green-signal>
 </phase>
 
 </workflow>
@@ -463,56 +465,104 @@ Would you like to invoke tech-stack-advisor now, or review/refine the brief firs
 <guardrails>
 
 <primary-directive>
-This skill produces a NEUTRAL handoff document. The brief must NOT influence or constrain decisions made by downstream skills (tech-stack-advisor, deployment-advisor). Any user preferences are recorded separately and clearly labeled as non-binding.
+This skill produces a NEUTRAL handoff document using Planning Mindset: Discovery Protocol to understand, Framing Exercise to reflect back, Approval Gates to confirm alignment. The brief captures WHAT and WHY without constraining HOW. Downstream skills receive unbiased input.
 </primary-directive>
 
+<scope-boundaries>
+<in-scope>
+
+- Understanding what user wants to build (WHAT)
+- Understanding why they want to build it (WHY)
+- Capturing deployment intent as category (localhost/public/TBD)
+- Recording user-stated preferences as non-binding reference
+- Producing neutral JSON + markdown handoff documents
+- Locking scope and intent decisions in DECISIONS.json
+
+</in-scope>
+
+<out-of-scope reason="tech-stack-advisor">
+
+- Technology recommendations
+- Framework suggestions
+- Language choices
+- Architecture patterns
+
+</out-of-scope>
+
+<out-of-scope reason="deployment-advisor">
+
+- Hosting platform recommendations
+- Infrastructure specifics
+- Deployment strategies
+
+</out-of-scope>
+
+<out-of-scope reason="project-spinup">
+
+- Code scaffolding
+- Configuration files
+- Implementation details
+
+</out-of-scope>
+</scope-boundaries>
+
 <must-do>
+
+- Use Discovery Protocol (Scope → Opportunity → Curiosity) to understand
+- Use Framing Exercise (Solution + Outcome + Exploration blend) to reflect back
+- Wait for explicit signal at Understanding Gate before generating brief
+- Wait for explicit signal at Handoff Gate before suggesting next skill
 - Create .docs/ directory if it doesn't exist
-- Keep brief focused on problem space (WHAT, not HOW)
-- Redirect over-specification attempts
-- Record user preferences in dedicated "User Stated Preferences" section ONLY
-- Label all user preferences as "Reference Only" - not requirements
-- Preserve learning opportunities (appropriate detail level)
-- Generate narrative, scannable output
-- Include deployment intent as simple category (Localhost/Public/TBD) without elaboration
-- Save to .docs/ subdirectory
-- Guide user to next skill in workflow
+- Generate both .docs/brief.json and .docs/brief-[project-name].md
+- Update .docs/DECISIONS.json with LOCKED decisions
+- Record user preferences in "user_stated_preferences" section (non-binding)
+- Keep all requirements technology-neutral
+
 </must-do>
 
 <must-not-do>
-- Specify technologies, frameworks, or libraries in requirements sections
-- Include architecture or design patterns in requirements
-- Name deployment platforms or hosting providers anywhere except "User Stated Preferences"
-- Include infrastructure specifics (Docker, serverless, etc.) in requirements
-- Make implementation or deployment decisions
-- Endorse or validate user's tech/platform preferences (remain neutral)
-- Skip clarifying questions when gaps exist
-- Allow hyper-detailed specifications that bypass learning
-- Save files outside .docs/ subdirectory
-- Include workflow termination guidance that implies deployment choices
+
+- Suggest technologies, frameworks, or libraries (tech-stack-advisor's scope)
+- Suggest deployment platforms or hosting (deployment-advisor's scope)
+- Provide architecture patterns or implementation details (project-spinup's scope)
+- Endorse or validate user's tech/platform preferences
+- Proceed on silence — always wait for explicit confirmation
+- Auto-advance to next skill without Handoff Gate approval
+- Use pain-point or constraint language (use opportunity-focused framing)
+- Use success criteria as rigid benchmarks (flow-based success)
+
 </must-not-do>
 
-<neutrality-rules>
-When users state technology or platform preferences:
-1. Acknowledge the preference without endorsing it
-2. Record it verbatim in "User Stated Preferences" section
-3. Include the explicit disclaimer that downstream skills will provide unbiased recommendations
-4. Do NOT rephrase preferences in a way that makes them sound like requirements
-5. Do NOT elaborate on why their preference might be good/bad
-</neutrality-rules>
+<approval-gates>
+This skill has TWO approval gates:
+
+1. **Understanding Gate** (Phase 3): After Framing Exercise
+   - Prompt: "Does this capture it?"
+   - Wait for Green/Yellow/Red signal
+
+2. **Handoff Gate** (Phase 7): Before suggesting tech-stack-advisor
+   - Prompt: "Ready to proceed?"
+   - Wait for Green/Yellow/Red signal
+
+Signal language:
+
+- 🟢 Green: "Good" / "Yes" / "Continue" / "👍"
+- 🟡 Yellow: "Yes, but..." / "Tweak X" / "Almost"
+- 🔴 Red: "Wait" / "Back up" / "Let's rethink"
+
+</approval-gates>
 
 <quality-checks>
 Before generating brief, verify:
-1. Problem clarity: Clear what problem is being solved and why?
-2. Feature completeness: Core features described at appropriate level?
-3. Success criteria: Can success be measured?
-4. Use cases: Realistic scenarios described?
-5. Boundaries: Scope clear (in-scope and out-of-scope)?
-6. Tech neutrality: Requirements sections free of ALL implementation details?
-7. Deployment neutrality: Deployment intent is category-only (no platform names)?
-8. Preference isolation: User preferences appear ONLY in dedicated section with disclaimer?
 
-If any check fails, ask more questions or revise before generating.
+1. Scope clarity: What's in and out is clear?
+2. Opportunity captured: Journey-focused value articulated?
+3. Framing confirmed: User approved the reflection?
+4. Tech neutrality: No implementation details in requirements?
+5. Deployment neutrality: Intent is category-only (no platform names)?
+6. Preferences isolated: Tech/platform preferences in dedicated section with non-binding note?
+
+If any check fails, ask more questions or return to earlier phase.
 </quality-checks>
 
 </guardrails>
@@ -521,63 +571,86 @@ If any check fails, ask more questions or revise before generating.
 
 <examples>
 
+<example name="discovery-protocol-flow">
+<context>User presents a rough project idea</context>
+<user-input>I want to build something to help me manage my notes across different projects</user-input>
+<response>
+Let me understand what you're envisioning.
+
+**Scope**: What's in scope for this project, and what's explicitly out? For example, are you thinking about notes for code projects specifically, or all kinds of notes? Search functionality? Linking between notes?
+
+**Opportunity**: What becomes possible for you by building this? What will you learn or be able to do that you can't now?
+
+**Curiosity**: What else should I know that I haven't asked?
+</response>
+</example>
+
+<example name="framing-exercise">
+<context>After discovery questions are answered</context>
+<response>
+So you're looking to build **a searchable notes system with tagging and project association** — something that lets you **find connections across your work effortlessly** and gives you a chance to **explore how you actually organize your thinking and learn about full-text search**.
+
+Does this capture it?
+</response>
+</example>
+
 <example name="user-over-specifies">
 <user-input>Build a REST API using Node.js and Express with MongoDB database</user-input>
 <response>
-I notice you're specifying technologies (Node.js, Express, MongoDB). For this brief, let's describe what the API needs to do without specifying the technology.
+I'll note "Node.js, Express, MongoDB" as stated preferences — downstream skills will see them but aren't bound by them.
 
-Try rephrasing as: 'Build an API that stores and retrieves data'
-
-I'll record 'Node.js, Express, MongoDB' in the User Stated Preferences section. The tech-stack-advisor skill will consider these alongside other options for your specific needs. Does that work?
-</response>
-</example>
-
-<example name="user-too-vague">
-<user-input>Build a tool to organize photos</user-input>
-<response>
-Great starting point! Let me ask some clarifying questions:
-
-**Problem Clarity**
-- What specific problem with photo organization are you trying to solve?
-- Who will use this tool?
-- What's your current workflow, and what's frustrating about it?
-- What would 'organized' mean for your photos?
-</response>
-</example>
-
-<example name="localhost-project">
-<user-input>Build a personal task manager that runs on my Mac</user-input>
-<response>
-I see this is a localhost-only project for personal use. I'll mark the deployment intent as "Localhost."
-
-Let me gather a few more details about your task manager requirements...
+For the brief: what does this API need to do? What data will it handle, and who or what will use it?
 </response>
 </example>
 
 <example name="user-specifies-platform">
-<user-input>I want to build a blog platform and deploy it on Vercel with a Supabase database</user-input>
+<user-input>I want to build a blog and deploy it on Vercel</user-input>
 <response>
-I'll capture "Vercel" and "Supabase" as your stated preferences - they'll be recorded in the handoff document for downstream skills to consider.
+I'll capture "Vercel" as your stated preference — it'll be in the handoff for deployment-advisor to consider.
 
-For the brief itself, I'll describe what the blog platform needs to do (features, requirements) and mark deployment intent as "Public." The deployment-advisor skill will evaluate your Vercel/Supabase preferences alongside other options.
+The brief will show deployment intent as "Public." Now let me understand what you want the blog to do...
 
-Let me ask some clarifying questions about what the blog should do...
+**Scope**: What features are in scope? Comments, categories, search? What's explicitly out for the first version?
 </response>
 </example>
 
-<example name="good-user-input">
-<user-input>Build a migration tool that transfers images from SmugMug to BackBlaze B2 storage while preserving metadata like dates, titles, and albums.</user-input>
+<example name="approval-gate-yellow">
+<context>User gives yellow signal at Understanding Gate</context>
+<user-input>Almost — but I also want it to sync across my devices</user-input>
 <response>
-Excellent! This is a well-scoped problem. Let me ask a few questions:
+Got it — adding cross-device sync to the scope.
 
-**Scope & Success**
-- Approximately how many images will you be migrating?
-- Do you need this to run once, or repeatedly for ongoing sync?
-- How will you know the migration was successful?
-- What should happen if the migration is interrupted?
+So you're looking to build **a searchable notes system with tagging, project association, and cross-device sync** — something that lets you **access and update your notes from anywhere** and gives you a chance to **explore sync architectures and conflict resolution**.
 
-**Deployment Intent**
-- Will this run only on your computer, or does it need to be accessible remotely?
+Does this capture it now?
+</response>
+</example>
+
+<example name="handoff-gate">
+<context>After brief is generated and saved</context>
+<response>
+## Brief Complete
+
+**Project:** notes-organizer
+**Mode:** LEARNING
+**Deployment Intent:** Public
+
+**Files Created:**
+
+- .docs/brief.json
+- .docs/brief-notes-organizer.md
+- .docs/DECISIONS.json (updated)
+
+**Decisions Locked:**
+
+- Deployment Intent: Public — user wants cross-device sync
+- Scope: Notes with tagging, search, project association, sync
+
+---
+
+**Next phase:** tech-stack-advisor
+
+Ready to proceed?
 </response>
 </example>
 
@@ -589,20 +662,52 @@ Excellent! This is a well-scoped problem. Let me ask a few questions:
 
 <workflow-position>
 Phase 0 in the Skills workflow chain (first skill).
-Produces: .docs/PROJECT-MODE.md, .docs/brief-{project}.md for tech-stack-advisor
+
+Produces:
+
+- .docs/brief.json (primary handoff — machine-readable)
+- .docs/brief-[project-name].md (secondary — human-readable)
+- .docs/PROJECT-MODE.md (workflow mode declaration)
+- .docs/DECISIONS.json (LOCKED decisions registry — created or updated)
+
+Consumed by: tech-stack-advisor
 </workflow-position>
+
+<planning-mindset-integration>
+This skill implements Planning Mindset with:
+
+- **Discovery Protocol**: Scope → Opportunity → Curiosity questions
+- **Framing Exercise**: Solution + Outcome + Exploration blend
+- **Approval Gates**: Understanding Gate (Phase 3), Handoff Gate (Phase 7)
+- **Rationale Capture**: Key decisions recorded with reasoning in JSON handoff
+
+Sequential Thinking is NOT invoked by default. User can request it for complex reasoning if needed.
+</planning-mindset-integration>
+
+<json-handoff-notes>
+The .docs/brief.json file is the authoritative handoff document. Downstream skills should:
+
+1. Read .docs/brief.json first
+2. Extract LOCKED decisions
+3. Respect user_stated_preferences as non-binding reference
+4. Use the framing section to understand project intent
+
+The markdown summary exists for human review but is not authoritative for skill-to-skill handoff.
+</json-handoff-notes>
 
 <termination-guidance>
 Deployment intent is captured as a simple category only:
-- Localhost: Project runs locally
-- Public: Project needs online access
+
+- localhost: Project runs locally
+- public: Project needs online access
 - TBD: Decision deferred
 
-Workflow path decisions are made by downstream skills, not this brief.
+This skill does NOT determine workflow termination. Downstream skills (deployment-advisor, project-spinup) handle termination logic based on deployment intent.
 </termination-guidance>
 
 <status-utility>
 Users can invoke the **workflow-status** skill at any time to:
+
 - See current workflow progress
 - Check which phases are complete
 - Get guidance on next steps

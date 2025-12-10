@@ -29,9 +29,97 @@ CONSULTANT role, not BUILDER role. Provides hosting recommendations and strategi
 
 ---
 
+<planning-mindset weight="medium">
+<!-- Medium weight: Approval Gates + Decision Framing + Rationale Capture -->
+<!-- Reference: .docs/planning-mindset-kernel.md -->
+
+<decision-framing>
+  <purpose>Reflect hosting options back to user before committing.</purpose>
+
+  <pattern>
+    "Based on what you've told me, here are the options I'm considering:
+
+    **Primary recommendation:** {Option} because {key reasons}
+    **Alternative:** {Option} - better if {conditions}
+    **Ruled out:** {Option} because {why not suitable}
+
+    Does this framing match your priorities, or should I weight something differently?"
+  </pattern>
+
+  <when>After gathering requirements, before generating full recommendation</when>
+</decision-framing>
+
+<approval-gates>
+  <gate id="framing">
+    <when>After presenting options summary, before detailed recommendation</when>
+    <prompt>"Does this framing match your priorities?"</prompt>
+  </gate>
+
+  <gate id="handoff">
+    <when>Before creating deployment-strategy.md handoff</when>
+    <prompt>"Ready to lock in this hosting strategy?"</prompt>
+  </gate>
+
+  <signals>
+    <signal color="green">Yes, Good, Continue, thumbs-up</signal>
+    <signal color="yellow">Yes but..., Almost, Adjust X</signal>
+    <signal color="red">Wait, Back up, Let's rethink</signal>
+  </signals>
+
+  <rule>Never proceed on silence. Always wait for explicit signal.</rule>
+</approval-gates>
+
+<rationale-capture>
+  <purpose>Document why this hosting choice was made.</purpose>
+
+  <include-in-handoff>
+    - Chosen option and key reasons
+    - Alternatives considered and why rejected
+    - Reversibility assessment (easy/moderate/difficult to change)
+  </include-in-handoff>
+</rationale-capture>
+</planning-mindset>
+
+---
+
 <workflow>
 
-<phase id="0" name="check-prerequisites">
+<phase id="0" name="load-environment">
+<description>Load environment context scoped to deployment-advisor</description>
+
+<steps>
+1. Attempt to read ~/.claude/environment.json
+2. If not found:
+   - Note: "No environment registry found. Will ask questions as needed."
+   - Proceed to Phase 1
+3. If found:
+   a. Read skill_data_access["deployment-advisor"]
+   b. Extract ONLY: deployment_options, infrastructure.vps, storage_options, skill_guidance.skip_questions, skill_guidance.never_suggest
+   c. Hold extracted data in working context
+   d. Do NOT reference any other registry data
+</steps>
+
+<on-success>
+I now know:
+- Allowed deployment targets (will ONLY recommend from this list)
+- Available VPS infrastructure
+- Storage options
+- Questions to skip
+- Recommendations to avoid
+
+Proceed to Phase 1.
+</on-success>
+
+<on-missing-registry>
+Proceed to Phase 1, will ask questions as needed.
+</on-missing-registry>
+
+<on-empty-access>
+Proceed to Phase 1, this skill operates without registry context.
+</on-empty-access>
+</phase>
+
+<phase id="1" name="check-prerequisites">
 <action>Check for handoff documents and gather missing information conversationally.</action>
 
 <expected-documents>
@@ -72,7 +160,7 @@ This skill NEVER blocks on missing prerequisites. It gathers information convers
 </key-principle>
 </phase>
 
-<phase id="1" name="gather-information">
+<phase id="2" name="gather-information">
 <action>Ask user for deployment information if not provided.</action>
 
 <required-information>
@@ -111,30 +199,63 @@ This skill NEVER blocks on missing prerequisites. It gathers information convers
 8. Compliance/Privacy: Data sovereignty, GDPR/HIPAA
 9. Deployment Frequency: Rarely / Occasional / Frequent / Continuous
 </optional-information>
+
+<registry-shortcut>
+If environment registry loaded in Phase 0:
+- Skip questions answered by registry data
+- Use registry values as defaults, confirm with user
+- Still ask questions not covered by registry
+</registry-shortcut>
 </phase>
 
-<phase id="2" name="consider-user-context">
-<action>Factor in available infrastructure and preferences.</action>
+<phase id="3" name="consider-context">
+<action>Factor in available infrastructure and preferences from registry or conversation.</action>
 
-<available-infrastructure>
-- Hostinger VPS8: 8 cores, 32GB RAM, 400GB storage
-  - Supabase (self-hosted), PocketBase, n8n, Ollama, Wiki.js, Caddy
-  - Docker/Docker Compose, SSH as user "john"
-- Cloudflare DNS
-- Backblaze B2 storage
-</available-infrastructure>
+<context-sources>
+1. Environment Registry (if loaded): infrastructure.vps, storage_options, deployment_options
+2. Conversation: User-stated preferences
+3. Handoffs: tech-stack-decision.md, PROJECT-MODE.md
+</context-sources>
 
-<user-preferences>
-- Prefers self-hosting when practical (learning + cost control)
-- Budget-conscious but willing to pay for right solution
-- Values learning over convenience
-- Comfortable with SSH and terminal basics
-- Learning Docker, server management
-</user-preferences>
+<apply-guidance>
+If skill_guidance loaded from registry:
+- skip_questions: Don't ask these questions, use registry values
+- never_suggest: Exclude these options from recommendations entirely
+</apply-guidance>
 </phase>
 
-<phase id="3" name="analyze-recommend">
+<phase id="4" name="frame-decision">
+<action>Present options summary for user validation before detailed recommendation.</action>
+
+<framing-output>
+"Based on what you've told me, here's how I'm thinking about this:
+
+**Primary recommendation:** {Option}
+- {Key reason 1}
+- {Key reason 2}
+
+**Alternative worth considering:** {Option}
+- Better if: {conditions}
+- Trade-off: {what you'd give up}
+
+**Ruled out:** {Option}
+- Why: {not suitable because}
+
+Does this framing match your priorities, or should I weight something differently?"
+</framing-output>
+
+<approval-gate id="framing">
+Wait for explicit confirmation before proceeding to detailed recommendation.
+- Green signal: Proceed to Phase 5
+- Yellow signal: Adjust framing based on feedback
+- Red signal: Return to Phase 2 to gather more context
+</approval-gate>
+</phase>
+
+<phase id="5" name="detailed-recommendation">
 <action>Generate comprehensive hosting recommendation.</action>
+
+<reference>See [HOSTING-TEMPLATES.md](HOSTING-TEMPLATES.md) for detailed templates and hosting options.</reference>
 
 <recommendation-components>
 1. Primary Hosting Recommendation
@@ -145,7 +266,8 @@ This skill NEVER blocks on missing prerequisites. It gathers information convers
 6. Monitoring & Maintenance schedule
 7. Backup Strategy
 8. Security Considerations
-9. Next Steps (invoke project-spinup, or note termination point)
+9. Decision Rationale (why this option, what was ruled out)
+10. Next Steps (invoke project-spinup, or note termination point)
 </recommendation-components>
 
 <localhost-recommendation>
@@ -157,8 +279,14 @@ When localhost is the chosen deployment target:
 </localhost-recommendation>
 </phase>
 
-<phase id="4" name="create-handoff">
+<phase id="6" name="create-handoff">
 <action>Create .docs/deployment-strategy.md handoff document.</action>
+
+<approval-gate id="handoff">
+"Ready to lock in this hosting strategy?"
+
+Wait for explicit confirmation before creating handoff.
+</approval-gate>
 
 <purpose>
 - Handoff artifact for project-spinup
@@ -168,14 +296,19 @@ When localhost is the chosen deployment target:
 
 <location>.docs/deployment-strategy.md</location>
 
-<timing>After collaborative refinement and user convergence on recommendation.</timing>
-
 <ensure-directory>
 Create .docs/ directory if it doesn't exist before writing handoff document.
 </ensure-directory>
+
+<include-rationale>
+Add "Decision Rationale" section to handoff:
+- Chosen: {option} because {reasons}
+- Alternatives considered: {option} - rejected because {why}
+- Reversibility: Easy / Moderate / Difficult to change
+</include-rationale>
 </phase>
 
-<phase id="5" name="checkpoint">
+<phase id="7" name="checkpoint">
 <action>Validate understanding based on PROJECT-MODE.md setting (or gathered mode preference).</action>
 
 <learning-mode>
@@ -210,378 +343,54 @@ Quick acknowledgment: "Ready to proceed? [Yes/No]"
 
 ---
 
-<hosting-options>
-
-<option name="localhost">
-<description>Running application on personal computer, not publicly accessible.</description>
-<best-for>Learning, personal utility apps, testing before deployment, development tools</best-for>
-<cost>$0</cost>
-<tech-stacks>Any</tech-stacks>
-<pros>No infrastructure to manage, immediate feedback, full control, any database locally, maximum privacy</pros>
-<cons>Not accessible outside network, dependent on computer being on, no global distribution</cons>
-<when-recommend>Personal-use only apps, learning projects, development utilities, testing environments</when-recommend>
-<workflow-note>This is a TERMINATION POINT - workflow complete after project-spinup</workflow-note>
-</option>
-
-<option name="hostinger-shared">
-<description>Traditional web hosting with cPanel, PHP/MySQL stack.</description>
-<best-for>Simple PHP sites, WordPress, static websites</best-for>
-<cost>$0 marginal if account exists, otherwise $3-5/month</cost>
-<tech-stacks>PHP + MySQL only</tech-stacks>
-<pros>$0 marginal cost, managed infrastructure, cPanel interface, minimal maintenance</pros>
-<cons>Limited to PHP + MySQL, no Docker, shared resources, single region</cons>
-<when-recommend>Simple PHP apps, WordPress, existing shared hosting account</when-recommend>
-</option>
-
-<option name="cloudflare-pages">
-<description>Serverless platform for static sites and JAMstack on global edge network.</description>
-<best-for>Static sites, SPAs, JAMstack, frontend-only projects</best-for>
-<cost>$0 (genuinely free, unlimited bandwidth/requests/builds)</cost>
-<tech-stacks>Any static generator, React, Vue, Next.js (static), Svelte, Astro</tech-stacks>
-<pros>Zero-config deployment, automatic HTTPS, global CDN, git-connected auto-deploy</pros>
-<cons>Static/frontend only, no persistent backend, 100MB project limit</cons>
-<vendor-lock-in>LOW - vanilla HTML/CSS/JS, portable</vendor-lock-in>
-<when-recommend>Frontend-only app, need global performance, want zero cost, already using Cloudflare DNS</when-recommend>
-</option>
-
-<option name="fly-io">
-<description>Platform for containerized applications globally across 35 regions with managed PostgreSQL.</description>
-<best-for>Full-stack with database, global distribution, managed infrastructure</best-for>
-<cost>$20-50/month for multiple small projects</cost>
-<tech-stacks>Any Docker-based</tech-stacks>
-<pros>Docker-based, 35 global regions, auto-scaling, managed PostgreSQL, CLI-first</pros>
-<cons>Requires Docker knowledge, pay-per-use pricing, data egress charges</cons>
-<vendor-lock-in>LOW - standard Docker containers portable anywhere</vendor-lock-in>
-<when-recommend>Full-stack needing database, global distribution, comfortable with Docker, $20-50/month acceptable</when-recommend>
-</option>
-
-<option name="vps-docker">
-<description>Virtual Private Server running Docker containers for complete control.</description>
-<best-for>Full-stack with custom requirements, self-hosted infrastructure, learning DevOps</best-for>
-<cost>$40-60/month VPS (marginal cost $0 if already have)</cost>
-<tech-stacks>Any</tech-stacks>
-<pros>Full control, use existing infrastructure, predictable costs, maximum learning, run any database</pros>
-<cons>More maintenance, manage security updates, single point of failure, slower deployment</cons>
-<vendor-lock-in>NONE - standard Docker containers, move anywhere</vendor-lock-in>
-<when-recommend>Already have VPS with capacity, tech stack runs in Docker, traffic <10k daily, learning is goal, need maximum control</when-recommend>
-</option>
-
-</hosting-options>
-
----
-
-<decision-framework>
-
-<scoring-criteria>
-Rate each 1-5:
-- Tech Stack Compatibility: Can handle chosen stack? Required services available?
-- Performance Requirements: Handle expected traffic? Acceptable latency?
-- Cost Efficiency: Fits budget? Predictable costs? Cost-effective as grows?
-- Deployment Ease: Complexity? Can user manage it? Automated or manual?
-- Maintenance Burden: Weekly maintenance time? Monitoring complexity?
-- Learning Value: Teaches useful skills? Industry-relevant?
-</scoring-criteria>
-
-<recommendation-logic>
-
-<localhost-when>
-- Personal utility app for own use only
-- Learning project with no need for public access
-- Development tools and scripts
-- Testing before public deployment
-- Privacy-sensitive personal data
-</localhost-when>
-
-<shared-hosting-when>
-- Simple PHP-based application
-- Traditional LAMP stack preferred
-- Minimal maintenance desired
-- Want to use existing shared hosting ($0 marginal)
-</shared-hosting-when>
-
-<cloudflare-pages-when>
-- Frontend-only application
-- Static or JAMstack architecture
-- Want zero cost
-- Need global CDN performance
-</cloudflare-pages-when>
-
-<fly-io-when>
-- Full-stack app with database
-- Need global distribution
-- Want managed infrastructure
-- Comfortable with Docker
-- Budget $20-50/month acceptable
-</fly-io-when>
-
-<vps-docker-when>
-- Tech stack runs well in Docker
-- Traffic low-to-moderate (<10k daily)
-- Want to learn DevOps
-- Budget-conscious (marginal cost $0)
-- Need maximum control
-- Want to self-host tools
-</vps-docker-when>
-
-</recommendation-logic>
-
-</decision-framework>
-
----
-
-<deployment-patterns>
-
-<pattern name="localhost-development">
-Option: Localhost
-Stack: Any
-Database: Local PostgreSQL/SQLite/MySQL
-Deployment: docker compose up (or native)
-Cost: $0/month
-Termination: Workflow complete after project-spinup
-</pattern>
-
-<pattern name="static-jamstack">
-Option: Cloudflare Pages
-Stack: React, Vue, Svelte, Astro, Next.js (static)
-Database: External API or none
-Deployment: Git push (auto-deploy)
-Cost: $0/month
-</pattern>
-
-<pattern name="full-stack-self-hosted">
-Option: VPS with Docker
-Stack: Next.js, FastAPI, PHP, Node.js
-Database: Self-hosted PostgreSQL/MySQL
-Deployment: Git push -> SSH -> docker compose up
-Cost: $0/month marginal
-</pattern>
-
-<pattern name="full-stack-global">
-Option: Fly.io
-Stack: Next.js, FastAPI, Node.js, Go
-Database: Fly.io managed PostgreSQL
-Deployment: fly deploy
-Cost: $20-50/month
-</pattern>
-
-<pattern name="hybrid-frontend-backend">
-Frontend: Cloudflare Pages
-Backend API: VPS with Docker
-Database: Self-hosted PostgreSQL
-Cost: $0/month marginal
-Best for: Fast frontend, controlled backend
-</pattern>
-
-<pattern name="simple-php">
-Option: Hostinger Shared Hosting
-Stack: PHP + MySQL
-Deployment: FTP or Git
-Cost: $3-5/month
-</pattern>
-
-</deployment-patterns>
-
----
-
-<output-format>
-
-<template>
-## PRIMARY HOSTING RECOMMENDATION: {Hosting Approach}
-
-{2-3 sentence summary}
-
-### Why This Fits Your Project
-- {Reason 1 - tech stack compatibility}
-- {Reason 2 - traffic/performance match}
-- {Reason 3 - budget alignment}
-
-### Why This Fits Your Infrastructure
-- {How it uses existing VPS}
-- {Integration with current setup}
-
-### Hosting Details
-
-| Aspect | Value |
-|--------|-------|
-| Provider | {Hostinger VPS / Shared / Localhost / Other} |
-| Server Type | {VPS / Shared / PaaS / Serverless / Local} |
-| Container | {Docker / Native / Platform-managed} |
-| Database | {Self-hosted / Managed / Local} |
-| File Storage | {Local VPS / Backblaze B2 / Local disk} |
-| CDN | {Cloudflare / Provider CDN / None} |
-| SSL | {Caddy / Let's Encrypt / Cloudflare / None} |
-
-### Deployment Workflow
-
-**Initial Setup (One-time):**
-{steps}
-
-**Regular Deployment (Updates):**
-{steps}
-
-**Rollback Procedure:**
-{steps}
-
-**Deployment Speed:** Fast / Moderate / Slow
-**Maintenance Burden:** Low / Medium / High
-
----
-
-## Cost Breakdown
-
-**Setup Costs:** ~${X}/month amortized
-**Monthly Ongoing:** ${Total}/month
-**Cost Scaling:** Current -> 10x traffic -> 100x traffic
-
----
-
-## Scaling Path
-
-**Current State:** {recommendation}
-**Phase 1 Optimization:** {when and what}
-**Phase 2 Scaling:** {when and what}
-
-**When to Scale:**
-- Phase 1: {specific metric}
-- Phase 2: {specific metric}
-
----
-
-## Alternative Hosting Options
-
-### Alternative 1: {approach}
-
-**Pros:** {list}
-**Cons:** {list}
-**Cost:** ${X}/month
-**When to Choose:** {conditions}
-
----
-
-## Monitoring & Maintenance
-
-**Daily:** {tasks}
-**Weekly:** {tasks}
-**Monthly:** {tasks}
-
----
-
-## Backup Strategy
-
-**Database Backups:** {frequency, method, storage, retention}
-**File Storage Backups:** {frequency, method}
-**Configuration Backups:** {method}
-**Disaster Recovery:** {procedure, estimated time}
-
----
-
-## Security Considerations
-
-**Implemented:** {list}
-**Recommended Additions:** {list}
-
----
-
-## Next Steps
-
-**Handoff document created:** .docs/deployment-strategy.md
-
-[If Localhost:]
-1. Proceed to project-spinup to generate your project foundation
-2. After project-spinup, your localhost project is ready for development
-3. **WORKFLOW TERMINATION POINT** - no further phases needed
-4. If you later decide to deploy publicly, re-run deployment-advisor
-
-[If Public Deployment:]
-1. Review and ask questions
-2. If agreed -> Invoke project-spinup skill
-3. Build your features
-4. When ready -> Use deploy-guide to deploy
-5. Optional -> Use ci-cd-implement for automation
-</template>
-
-<localhost-template>
-## PRIMARY HOSTING RECOMMENDATION: Localhost
-
-This project will run locally on your development machine.
-
-### Why Localhost
-- Personal utility / learning project - no public access needed
-- Full control over environment
-- Zero hosting costs
-- Privacy for personal data
-- Immediate development feedback
-
-### Local Development Setup
-
-| Aspect | Value |
-|--------|-------|
-| Environment | Local machine (Mac) |
-| Container | Docker Compose (recommended) or native |
-| Database | Local {database type} |
-| Storage | Local filesystem |
-| Access | localhost only |
-
-### Development Workflow
-
-**Start Development:**
-```bash
-docker compose up -d  # or native start commands
-```
-
-**Access Application:**
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- Database: localhost:5432
-
-### Cost
-$0/month - runs on your existing computer
-
-### Future Public Deployment
-If you later decide to deploy publicly:
-1. Re-run deployment-advisor
-2. Choose a public hosting option
-3. Continue with deploy-guide and ci-cd-implement
-
----
-
-## Next Steps
-
-**Handoff document created:** .docs/deployment-strategy.md
-
-1. Proceed to project-spinup to generate your project foundation
-2. After project-spinup, start building your features
-3. **WORKFLOW TERMINATION POINT** - no hosting phases needed
-
-Your localhost project workflow is: project-brief-writer -> tech-stack-advisor -> deployment-advisor -> project-spinup -> DONE
-</localhost-template>
-
-</output-format>
+<hosting-options-summary>
+<!-- Full details in HOSTING-TEMPLATES.md -->
+
+| Option | Best For | Cost | Lock-in |
+|--------|----------|------|---------|
+| Localhost | Learning, personal tools | $0 | None |
+| Shared Hosting | PHP + MySQL | $0-5/mo | Low |
+| Cloudflare Pages | Static/JAMstack | $0 | Low |
+| Fly.io | Full-stack global | $20-50/mo | Low |
+| VPS Docker | Self-hosted, learning | $0 marginal | None |
+
+For detailed hosting options, decision logic, and templates, see [HOSTING-TEMPLATES.md](HOSTING-TEMPLATES.md).
+</hosting-options-summary>
 
 ---
 
 <guardrails>
 
 <must-do>
+- Run Phase 0 to load environment registry (graceful degradation if missing)
 - Gather tech stack details (can't recommend hosting without knowing what runs)
-- Consider user's VPS (leverage when appropriate)
+- Use Decision Framing (Phase 4) before detailed recommendation
+- Wait for approval gates (framing, handoff)
+- Consider user's existing infrastructure
 - Budget-conscious recommendations
 - Learning-first when appropriate
 - Provide concrete steps (actual commands/workflow)
 - Cost transparency (setup + monthly, compare alternatives)
 - Include backup, monitoring, security considerations
 - Create .docs/deployment-strategy.md handoff document
+- Include decision rationale in handoff
 - Recognize localhost as valid deployment target
 - Indicate termination points clearly
 - Gather missing prerequisites conversationally (never block)
 </must-do>
 
 <must-not-do>
+- Skip Phase 0 environment loading
+- Skip Decision Framing approval gate
+- Skip handoff approval gate
+- Proceed on silence (always wait for explicit confirmation)
 - Skip handoff document creation
 - Configure servers (CONSULTANT role)
 - Push to next phase without checkpoint validation
 - Dismiss localhost as "not a real deployment"
 - Block on missing prerequisites (gather info instead)
+- Recommend options in skill_guidance.never_suggest
+- Access registry data outside allowed paths
 </must-not-do>
 
 </guardrails>
