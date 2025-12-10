@@ -1,0 +1,558 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-12-10",
+  "owner": "john",
+
+  "skill_data_access": {
+    "project-brief-writer": [],
+    "tech-stack-advisor": [
+      "database_options",
+      "skill_guidance.preferences"
+    ],
+    "deployment-advisor": [
+      "deployment_options",
+      "infrastructure.vps",
+      "storage_options",
+      "skill_guidance.skip_questions",
+      "skill_guidance.never_suggest"
+    ],
+    "project-spinup": [
+      "infrastructure.services",
+      "credentials.api_endpoints",
+      "established_choices"
+    ],
+    "test-orchestrator": [
+      "established_choices.containerization"
+    ],
+    "ci-cd-implement": [
+      "deployment_options",
+      "external_accounts.github"
+    ],
+    "deploy-guide": [
+      "infrastructure",
+      "credentials",
+      "established_choices"
+    ]
+  },
+
+  "infrastructure": {
+    "vps": {
+      "vps8": {
+        "provider": "Hostinger",
+        "role": "homelab",
+        "hostname": "srv1086450.hstgr.cloud",
+        "internal_name": "vps8",
+        "ip": "72.60.27.146",
+        "ssh_user": "john",
+        "specs": {
+          "ram": "32GB",
+          "cpu": "8 vCPU",
+          "storage": "400GB",
+          "os": "Ubuntu 24.04"
+        },
+        "proxy": "caddy",
+        "ssh_access": true,
+        "hardened": true,
+        "docker_installed": true,
+        "docker_network": "homelab-net",
+        "home_directory": "/home/john/homelab",
+        "notes": "Primary homelab server - hosts all homelab services"
+      },
+      "vps2": {
+        "provider": "Hostinger",
+        "role": "application_hosting",
+        "hostname": "srv993275.hstgr.cloud",
+        "internal_name": "vps2",
+        "ip": "31.97.131.163",
+        "ssh_user": "john",
+        "specs": {
+          "ram": "8GB",
+          "cpu": "2 vCPU",
+          "storage": "100GB",
+          "os": "Ubuntu 24.04"
+        },
+        "proxy": "caddy",
+        "ssh_access": true,
+        "hardened": true,
+        "docker_installed": true,
+        "notes": "Medium VPS for container deployments"
+      },
+      "vps1": {
+        "provider": "Hostinger",
+        "role": "application_hosting",
+        "hostname": "srv990934.hstgr.cloud",
+        "internal_name": "vps1",
+        "ip": "69.62.68.46",
+        "ssh_user": "john",
+        "specs": {
+          "ram": "4GB",
+          "cpu": "1 vCPU",
+          "storage": "50GB",
+          "os": "Ubuntu 24.04"
+        },
+        "proxy": "caddy",
+        "ssh_access": true,
+        "hardened": true,
+        "docker_installed": true,
+        "notes": "Smallest VPS for lightweight container deployments"
+      }
+    },
+
+    "services": {
+      "caddy": {
+        "location": "vps8",
+        "type": "reverse_proxy",
+        "container_name": "caddy",
+        "docker_image": "caddy:2.7-alpine",
+        "ports": {
+          "http": 80,
+          "https": 443
+        },
+        "status": "running",
+        "tls": "automatic via Let's Encrypt",
+        "notes": "Reverse proxy with automatic HTTPS for all homelab services"
+      },
+      "supabase_selfhosted": {
+        "location": "vps8",
+        "type": "supabase",
+        "dashboard_url": "https://supabase.haugaard.dev",
+        "api_url": "https://supabase.haugaard.dev/rest/v1/",
+        "database": {
+          "type": "PostgreSQL 15",
+          "internal_host": "supabase-db",
+          "internal_port": 5432,
+          "external_access": "SSH tunnel required"
+        },
+        "status": "running",
+        "features": ["PostgreSQL with pgvector", "Auto-generated REST API", "GoTrue auth", "Real-time subscriptions", "File storage"],
+        "notes": "Self-hosted Supabase instance"
+      },
+      "pocketbase_homelab": {
+        "location": "vps8",
+        "type": "pocketbase",
+        "container_name": "pocketbase",
+        "docker_image": "ghcr.io/muchobien/pocketbase:0.20.0",
+        "url": "https://pocketbase.haugaard.dev",
+        "admin_url": "https://pocketbase.haugaard.dev/_/",
+        "api_endpoint": "https://pocketbase.haugaard.dev/api/",
+        "internal_port": 8090,
+        "database": {
+          "type": "Embedded SQLite"
+        },
+        "status": "running",
+        "purpose": "shared backend for multiple projects",
+        "notes": "Primary homelab PocketBase instance"
+      },
+      "n8n": {
+        "location": "vps8",
+        "type": "n8n",
+        "container_name": "n8n",
+        "docker_image": "n8nio/n8n:1.19",
+        "url": "https://n8n.haugaard.dev",
+        "webhook_url": "https://n8n.haugaard.dev/",
+        "internal_port": 5678,
+        "database": {
+          "type": "PostgreSQL (shared Supabase)",
+          "host": "supabase-db",
+          "database_name": "n8n",
+          "user": "n8n_user"
+        },
+        "status": "running",
+        "notes": "Workflow automation"
+      },
+      "wikijs": {
+        "location": "vps8",
+        "type": "wiki",
+        "container_name": "wikijs",
+        "docker_image": "ghcr.io/requarks/wiki:2.5",
+        "url": "https://wikijs.haugaard.dev",
+        "internal_port": 3000,
+        "database": {
+          "type": "PostgreSQL 15 (dedicated container)",
+          "container_name": "wikijs-db",
+          "internal_port": 5433
+        },
+        "status": "running",
+        "notes": "Documentation wiki"
+      },
+      "ollama": {
+        "location": "vps8",
+        "type": "llm",
+        "container_name": "ollama",
+        "docker_image": "ollama/ollama:0.1",
+        "url": "https://ollama.haugaard.dev",
+        "api_endpoint": "https://ollama.haugaard.dev/api/generate",
+        "internal_port": 11434,
+        "resource_limits": {
+          "cpu": "6 cores",
+          "memory": "16GB max"
+        },
+        "models_available": ["llama3.2:3b", "nomic-embed-text"],
+        "status": "running",
+        "notes": "Local LLM inference (CPU-based, no GPU)"
+      },
+      "redis": {
+        "location": "vps8",
+        "type": "cache",
+        "container_name": "redis",
+        "docker_image": "redis:7.2-alpine",
+        "internal_port": 6379,
+        "config": {
+          "authentication": "password required",
+          "persistence": "RDB snapshots + AOF logs",
+          "maxmemory": "512mb",
+          "eviction_policy": "allkeys-lru"
+        },
+        "database_allocation": {
+          "db0": "Laravel cache",
+          "db1": "Laravel sessions",
+          "db2": "Laravel queues",
+          "db3": "n8n (if needed)",
+          "db4-15": "Available for future services"
+        },
+        "status": "running",
+        "used_by": ["Laravel", "n8n (optional)"],
+        "notes": "In-memory cache, session store, and message broker"
+      },
+      "laravel": {
+        "location": "vps8",
+        "type": "php_framework",
+        "container_name": "laravel",
+        "docker_image": "custom (dunglas/frankenphp:1-php8.3-alpine base)",
+        "url": "https://laravel.haugaard.dev",
+        "internal_port": 8080,
+        "php": {
+          "version": "8.3",
+          "server": "FrankenPHP",
+          "extensions": ["pdo_sqlite", "pdo_pgsql", "pdo_mysql", "redis", "pcntl", "bcmath", "opcache", "intl", "gd", "zip", "exif"]
+        },
+        "database": {
+          "default": "SQLite (embedded)",
+          "alternatives": ["PocketBase via HTTP API", "Supabase PostgreSQL"]
+        },
+        "cache_driver": "redis",
+        "session_driver": "redis",
+        "queue_driver": "redis",
+        "project_location": "/home/john/homelab/laravel/projects/current",
+        "status": "running",
+        "notes": "PHP application framework with FrankenPHP server"
+      }
+    }
+  },
+
+  "deployment_options": {
+    "allowed": [
+      {
+        "id": "vps_container_vps8",
+        "name": "VPS Container (vps8 - Homelab)",
+        "type": "docker_container",
+        "target": "vps8",
+        "suitable_for": ["homelab_services", "shared_infrastructure", "resource_intensive"],
+        "notes": "Primary homelab server - 8 cores, 32GB RAM"
+      },
+      {
+        "id": "vps_container_vps2",
+        "name": "VPS Container (vps2)",
+        "type": "docker_container",
+        "target": "vps2",
+        "suitable_for": ["web_apps", "apis", "background_services"],
+        "notes": "Medium VPS - 2 cores, 8GB RAM"
+      },
+      {
+        "id": "vps_container_vps1",
+        "name": "VPS Container (vps1)",
+        "type": "docker_container",
+        "target": "vps1",
+        "suitable_for": ["lightweight_apps", "simple_apis", "static_sites"],
+        "notes": "Smallest VPS - 1 core, 4GB RAM"
+      },
+      {
+        "id": "fly_io",
+        "name": "Fly.io",
+        "type": "paas",
+        "suitable_for": ["web_apps", "apis", "globally_distributed"],
+        "notes": "Good for apps needing edge deployment"
+      },
+      {
+        "id": "cloudflare_pages",
+        "name": "Cloudflare Pages",
+        "type": "static_jamstack",
+        "suitable_for": ["static_sites", "jamstack", "spa"],
+        "notes": "Static sites and Jamstack only"
+      },
+      {
+        "id": "hostinger_shared",
+        "name": "Hostinger Shared Hosting",
+        "type": "shared_hosting",
+        "suitable_for": ["php", "wordpress", "simple_static"],
+        "notes": "Traditional shared hosting"
+      },
+      {
+        "id": "localhost",
+        "name": "Localhost",
+        "type": "local",
+        "suitable_for": ["development", "learning", "limited_production"],
+        "notes": "Valid for dev AND limited production for small-scale, short-term projects"
+      }
+    ],
+    "not_using": [
+      "AWS",
+      "GCP",
+      "Azure",
+      "Vercel",
+      "Netlify",
+      "Heroku",
+      "DigitalOcean"
+    ],
+    "selection_notes": "Deployment target should match project requirements. Don't suggest options outside this list."
+  },
+
+  "storage_options": {
+    "backblaze_b2": {
+      "available": true,
+      "account_exists": true,
+      "bucket_creation": "on_demand",
+      "key_provisioning": "per_project",
+      "backup_bucket": "haugaard-homelab-backups",
+      "region": "us-west-004",
+      "compatible_with": ["vps_container_vps8", "vps_container_vps2", "vps_container_vps1", "fly_io", "localhost"],
+      "notes": "User will provide bucket-specific keys for each project"
+    },
+    "tigris": {
+      "available": true,
+      "preferred_with": ["fly_io"],
+      "endpoint": "https://t3.storage.dev",
+      "s3_compatible": true,
+      "instances": {
+        "haugaardpb_iad": {
+          "associated_with": "external_accounts.fly_io.existing_pocketbase_instances.haugaardpb_iad",
+          "fly_app": "haugaardpb-iad",
+          "bucket_creation": "on_demand",
+          "key_provisioning": "per_project",
+          "management": "flyctl (fly storage create/list/destroy)",
+          "backup": "none_established",
+          "notes": "Tigris object storage for haugaardpb-iad PocketBase instance"
+        },
+        "proposaltracker_api": {
+          "associated_with": "external_accounts.fly_io.existing_pocketbase_instances.proposaltracker_api",
+          "fly_app": "proposaltracker-api",
+          "bucket_creation": "on_demand",
+          "key_provisioning": "per_project",
+          "management": "flyctl (fly storage create/list/destroy)",
+          "backup": "none_established",
+          "notes": "Tigris object storage for proposaltracker-api PocketBase instance"
+        }
+      },
+      "credential_template": {
+        "AWS_ENDPOINT_URL_S3": "https://t3.storage.dev",
+        "AWS_ACCESS_KEY_ID": "<provided_per_bucket>",
+        "AWS_SECRET_ACCESS_KEY": "<provided_per_bucket>",
+        "BUCKET_NAME": "<bucket_name>"
+      },
+      "console_access": "Login via Fly.io button at Tigris console (not Google/GitHub/email)",
+      "billing": "Through Fly.io account",
+      "notes": "S3-compatible object storage for Fly.io apps. No egress fees. Buckets managed via flyctl."
+    },
+    "local_storage": {
+      "available": true,
+      "use_cases": ["development", "small_projects"],
+      "notes": "Docker volumes on VPS or local filesystem"
+    }
+  },
+
+  "external_accounts": {
+    "fly_io": {
+      "account_exists": true,
+      "can_create_apps": true,
+      "can_create_postgres": true,
+      "can_create_pocketbase": true,
+      "existing_pocketbase_instances": {
+        "proposaltracker_api": {
+          "name": "proposaltracker-api",
+          "url": "https://proposaltracker-api.fly.dev",
+          "ip": "66.241.125.121",
+          "purpose": "Proposal tracker application backend",
+          "object_storage": "storage_options.tigris.instances.proposaltracker_api"
+        },
+        "haugaardpb_iad": {
+          "name": "haugaardpb-iad",
+          "url": "https://haugaardpb-iad.fly.dev",
+          "ip": "66.241.125.54",
+          "purpose": "General purpose PocketBase instance",
+          "object_storage": "storage_options.tigris.instances.haugaardpb_iad"
+        }
+      },
+      "notes": "Full Fly.io access. Two existing PocketBase instances available."
+    },
+    "cloudflare": {
+      "account_exists": true,
+      "services": ["pages", "workers", "dns"],
+      "notes": "Domain DNS managed here"
+    },
+    "github": {
+      "account_exists": true,
+      "can_create_repos": true,
+      "actions_available": true
+    },
+    "backblaze": {
+      "account_exists": true,
+      "services": ["b2_storage"],
+      "notes": "See storage_options.backblaze_b2"
+    }
+  },
+
+  "database_options": {
+    "pocketbase": {
+      "instances": {
+        "homelab": {
+          "reference": "infrastructure.services.pocketbase_homelab",
+          "url": "https://pocketbase.haugaard.dev",
+          "use_when": "shared backend, non-isolated projects, homelab ecosystem"
+        },
+        "fly_proposaltracker": {
+          "reference": "external_accounts.fly_io.existing_pocketbase_instances.proposaltracker_api",
+          "url": "https://proposaltracker-api.fly.dev",
+          "use_when": "proposal tracker project specifically"
+        },
+        "fly_haugaardpb": {
+          "reference": "external_accounts.fly_io.existing_pocketbase_instances.haugaardpb_iad",
+          "url": "https://haugaardpb-iad.fly.dev",
+          "use_when": "general purpose, isolated projects on Fly.io"
+        },
+        "fly_new": {
+          "type": "on_demand",
+          "use_when": "project needs complete isolation or new Fly.io deployment"
+        }
+      },
+      "default": "homelab",
+      "notes": "Confirm which instance for each project - user chooses between homelab or Fly.io instances"
+    },
+    "supabase": {
+      "instances": {
+        "selfhosted": {
+          "reference": "infrastructure.services.supabase_selfhosted",
+          "use_when": "full Supabase features needed (auth, realtime, storage, edge functions)"
+        }
+      }
+    },
+    "sqlite": {
+      "available": true,
+      "use_when": "simple persistence, single-user apps, development, Laravel default"
+    },
+    "postgres": {
+      "options": ["supabase_selfhosted", "fly_io_managed"],
+      "notes": "Via self-hosted Supabase or Fly.io managed postgres"
+    },
+    "redis": {
+      "reference": "infrastructure.services.redis",
+      "use_when": "caching, sessions, queues, real-time features",
+      "notes": "Available on vps8 homelab"
+    }
+  },
+
+  "established_choices": {
+    "proxy_server": {
+      "choice": "caddy",
+      "locked": true,
+      "reason": "Installed on all VPS, handles SSL automatically via Let's Encrypt"
+    },
+    "ssh_security": {
+      "choice": "hardened",
+      "locked": true,
+      "details": ["key_based_auth", "password_disabled", "fail2ban"]
+    },
+    "containerization": {
+      "choice": "docker",
+      "locked": true,
+      "reason": "Docker installed on all VPS"
+    },
+    "version_control": {
+      "choice": "git",
+      "remote": "github",
+      "locked": true
+    },
+    "cost_assessment": {
+      "choice": "user_managed",
+      "locked": true,
+      "reason": "User maintains separate cost assessments"
+    },
+    "php_server": {
+      "choice": "frankenphp",
+      "locked": true,
+      "reason": "FrankenPHP for Laravel - Laravel Cloud compatible"
+    }
+  },
+
+  "skill_guidance": {
+    "skip_questions": [
+      "ssh_access_available",
+      "proxy_server_choice",
+      "cost_comparison_needed",
+      "storage_cost_analysis",
+      "can_create_buckets",
+      "docker_available",
+      "git_available",
+      "github_access",
+      "server_user_account"
+    ],
+    "always_offer": [
+      "backblaze_b2_storage",
+      "tigris_with_fly_io",
+      "redis_for_caching"
+    ],
+    "always_ask": [
+      "pocketbase_instance_choice",
+      "deployment_target_selection"
+    ],
+    "never_suggest": [
+      "nginx_instead_of_caddy",
+      "deployment_outside_allowed_list",
+      "cost_optimization_alternatives",
+      "apache_instead_of_frankenphp"
+    ],
+    "preferences": {
+      "explanations": "concise",
+      "alternatives_shown": 2,
+      "learning_mode_default": true
+    }
+  },
+
+  "credentials": {
+    "_note": "Only non-sensitive identifiers here. Actual secrets go in .env files.",
+    "domains": {
+      "primary": "haugaard.dev",
+      "managed_by": "cloudflare"
+    },
+    "api_endpoints": {
+      "pocketbase_homelab": "https://pocketbase.haugaard.dev/api/",
+      "pocketbase_fly_proposaltracker": "https://proposaltracker-api.fly.dev/api/",
+      "pocketbase_fly_haugaardpb": "https://haugaardpb-iad.fly.dev/api/",
+      "supabase_api": "https://supabase.haugaard.dev/rest/v1/",
+      "ollama": "https://ollama.haugaard.dev/api/generate",
+      "n8n_webhook": "https://n8n.haugaard.dev/",
+      "laravel": "https://laravel.haugaard.dev"
+    },
+    "admin_panels": {
+      "pocketbase_homelab": "https://pocketbase.haugaard.dev/_/",
+      "supabase": "https://supabase.haugaard.dev",
+      "n8n": "https://n8n.haugaard.dev",
+      "wikijs": "https://wikijs.haugaard.dev"
+    }
+  },
+
+  "backup": {
+    "destination": "Backblaze B2",
+    "bucket": "haugaard-homelab-backups",
+    "path_prefix": "homelab/",
+    "frequency": "Daily at 3 AM",
+    "retention": "30 days",
+    "services_backed_up": [
+      "supabase (PostgreSQL dump)",
+      "n8n (data volume)",
+      "wikijs (PostgreSQL dump)",
+      "pocketbase (data volume)",
+      "redis (data volume)",
+      "laravel (sqlite + storage)"
+    ]
+  }
+}

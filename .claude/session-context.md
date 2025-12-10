@@ -2,112 +2,112 @@
 
 ## Current Focus
 
-**Workflow Skills Revision - Phase 0 + Planning Mindset Implementation**
+**Workflow Skills Revision - Ready for Testing**
 
-Plan file: `~/.claude/plans/cozy-dazzling-pixel.md`
+Next step: Test the three-skill sequence (project-brief-writer → tech-stack-advisor → deployment-advisor) with a real project.
+
+Plan file: `.docs/cozy-dazzling-pixel.md`
+Decisions file: `docs/workflow-refinement.md` (v2 - finalized)
+
+---
+
+## Session 2025-12-10 (continued): JSON Handoffs Implemented
+
+### Completed
+
+4. **project-brief-writer** - Updated for JSON handoffs
+   - Output: `.docs/brief.json`
+   - Full JSON schema with rationale, problem, goals, features, use_cases, etc.
+   - Deployment intent as enum: `localhost | public | tbd`
+
+5. **tech-stack-advisor** - Updated for JSON handoffs
+   - Input: `.docs/brief.json`
+   - Output: `.docs/tech-stack-decision.json`
+   - JSON schema with decisions array, stack_summary, alternatives_considered
+
+6. **deployment-advisor** - Updated for JSON handoffs
+   - Input: `.docs/tech-stack-decision.json`
+   - Output: `.docs/deployment-strategy.json`
+   - JSON schema with hosting config, deployment_workflow, cost, scaling_path
+
+---
+
+## Session 2025-12-10 (earlier): Foundation
+
+### Completed
+
+1. **environment.json updated** - Added Tigris object storage for Fly.io PocketBase instances
+   - `storage_options.tigris.instances.haugaardpb_iad`
+   - `storage_options.tigris.instances.proposaltracker_api`
+   - Cross-references added in `external_accounts.fly_io.existing_pocketbase_instances`
+
+2. **Environment Registry deployed** - Copied to `~/.claude/environment.json`
+
+3. **workflow-refinement.md finalized (v2)** - All architectural decisions locked:
+   - Sequence corrected: `deploy-guide → ci-cd-implement` ("make it work, then automate")
+   - JSON handoffs with narrative rationale section
+   - All 6 open questions resolved (see Resolved Questions below)
+
+---
 
 ## Session 2025-12-09: Accomplishments
 
 ### Completed
 
-1. **deployment-advisor** - DONE
-   - Added Phase 0 (load-environment) with graceful degradation
-   - Added Decision Framing (Planning Mindset, medium weight)
-   - Created HOSTING-TEMPLATES.md (386 lines) with externalized content
+1. **deployment-advisor** - Phase 0 + Planning Mindset added
+   - Created HOSTING-TEMPLATES.md (386 lines)
    - SKILL.md reduced from 634 → 442 lines
 
-2. **tech-stack-advisor** - DONE
-   - Added Phase 0 (load-environment) with graceful degradation
-   - Added Lightweight Discovery (Planning Mindset, light-medium weight)
-   - Created DECISION-FRAMEWORKS.md (390 lines) with externalized content
+2. **tech-stack-advisor** - Phase 0 + Planning Mindset added
+   - Created DECISION-FRAMEWORKS.md (390 lines)
    - SKILL.md reduced from 657 → 454 lines
 
-### Implementation Progress
+---
 
-| Skill | Status | Notes |
-|-------|--------|-------|
-| deployment-advisor | ✅ Complete | Pilot for Phase 0 pattern |
-| tech-stack-advisor | ✅ Complete | |
-| project-spinup | ⏳ Pending | |
-| deploy-guide | ⏳ Pending | |
-| ci-cd-implement | ⏳ Pending | |
-| test-orchestrator | ⏳ Pending | |
-| project-brief-writer | ⏳ Pending | Empty registry access |
+## Implementation Progress
 
-## Open Decision: Handoff Format (Markdown vs JSON)
+| Skill | Phase 0 | JSON Handoff | Notes |
+|-------|---------|--------------|-------|
+| project-brief-writer | ✅ Done | ✅ Done | Outputs `.docs/brief.json` |
+| tech-stack-advisor | ✅ Done | ✅ Done | Outputs `.docs/tech-stack-decision.json` |
+| deployment-advisor | ✅ Done | ✅ Done | Outputs `.docs/deployment-strategy.json` |
+| project-spinup | ⏳ Pending | ⏳ Pending | After testing |
+| test-orchestrator | ⏳ Pending | ⏳ Pending | After testing |
+| deploy-guide | ⏳ Pending | ⏳ Pending | After testing |
+| ci-cd-implement | ⏳ Pending | ⏳ Pending | After testing |
+| workflow-status | ⏳ Pending | N/A | Read-only, needs to read JSON |
 
-**Context discovered mid-session:**
+---
 
-The `docs/workflow-refinement.md` document (created 2025-12-04) contains architectural decisions about handoff formats that were not referenced at session start:
+## Resolved Questions (from workflow-refinement.md v2)
 
-- **Decision 3**: "Handoffs Are JSON, Not Markdown"
-- **Question 6 Resolution**: "Option A for now (JSON only)"
-- Naming convention: `.docs/brief.json`, `.docs/tech-stack-decision.json`, etc.
+| Question | Decision |
+|----------|----------|
+| Q1: JSON Schema Strictness | Flexible, required fields only |
+| Q2: Decision Locking | Lock on handoff, revise by re-running skill |
+| Q3: workflow-status Role | Hybrid (provides validation templates) |
+| Q4: User Context | Keep in environment.json |
+| Q5: Handoff Naming | Descriptive (`brief.json`, `tech-stack-decision.json`) |
+| Q6: Backward Compatibility | JSON only |
 
-**Current state:**
-- The two completed skills (deployment-advisor, tech-stack-advisor) produce **Markdown** handoffs
-- This contradicts the earlier architectural decision
-
-**Options:**
-1. Continue with Markdown handoffs, convert to JSON later (assessed as "Medium" effort)
-2. Pause and convert completed skills to JSON before continuing
-3. Revisit the JSON decision entirely
-
-**User is thinking on this** - decision needed before continuing with remaining skills.
+---
 
 ## Key Documents
 
 | Document | Location | Purpose |
 |----------|----------|---------|
-| Master Plan | `~/.claude/plans/cozy-dazzling-pixel.md` | Implementation plan |
-| Phase 0 Spec | `docs/skill-data-access-update.md` | Environment registry loading pattern |
-| **Workflow Refinement** | `docs/workflow-refinement.md` | **Architectural decisions including JSON handoffs** |
+| Workflow Refinement | `docs/workflow-refinement.md` | **Master decisions document (v2)** |
+| Implementation Plan | `.docs/cozy-dazzling-pixel.md` | Phase rollout plan |
+| Environment Registry | `~/.claude/environment.json` | User infrastructure/preferences |
 | Planning Mindset | `.docs/planning-mindset-kernel.md` | Reusable Planning Mindset XML |
-| Registry Schema | `docs/environment-registry-planning.md` | Environment.json structure |
-
-## Key Decisions (This Project)
-
-| Decision | Resolution | Source |
-|----------|------------|--------|
-| Registry priority | TOP priority | Plan |
-| Reference location | Alongside skills (not centralized) | Plan |
-| 500-line target | Guideline, not rule | Plan |
-| User vs project level | User-level preferred | Plan |
-| Graceful degradation | Required | Plan |
-| **Handoff format** | **JSON (per workflow-refinement.md) - BUT not yet implemented** | workflow-refinement.md |
-
-## Environment Registry Status
-
-- `~/.claude/environment.json` - NOT YET CREATED (user working on it separately)
-- Skills must gracefully degrade when registry is absent or incomplete
 
 ---
 
-## Suggested Prompt for Next Session
+## Environment Registry Status
 
-```
-Continue the workflow skills revision per the plan at ~/.claude/plans/cozy-dazzling-pixel.md
+✅ **DONE** - `~/.claude/environment.json` created and deployed
 
-Read these files for context:
-- .claude/session-context.md (current state)
-- docs/workflow-refinement.md (architectural decisions - IMPORTANT)
-
-Key decision needed before continuing:
-The workflow-refinement.md document specifies JSON handoffs, but the first two completed skills (deployment-advisor, tech-stack-advisor) produce Markdown handoffs.
-
-My decision: [MARKDOWN / JSON / OTHER]
-
-If MARKDOWN: Continue with remaining skills using Markdown handoffs. We'll convert to JSON later if needed.
-
-If JSON: First update deployment-advisor and tech-stack-advisor to produce JSON handoffs, then continue with remaining skills using JSON from the start.
-
-Remaining skills to update:
-- project-spinup
-- deploy-guide
-- ci-cd-implement
-- test-orchestrator
-- project-brief-writer
-```
+Skills access via `skill_data_access` block with graceful degradation when absent.
 
 ---
 
@@ -115,8 +115,30 @@ Remaining skills to update:
 
 (None needed)
 
+---
+
+## Suggested Prompt for Next Session
+
+```
+Continue workflow skills revision per docs/workflow-refinement.md (v2).
+
+Read for context:
+- .claude/session-context.md (current state)
+- docs/workflow-refinement.md (finalized decisions)
+
+Current step: Test the three-skill sequence with a real project.
+- project-brief-writer → .docs/brief.json
+- tech-stack-advisor → .docs/tech-stack-decision.json
+- deployment-advisor → .docs/deployment-strategy.json
+
+After testing: Roll out JSON handoffs to remaining skills per .docs/cozy-dazzling-pixel.md
+```
+
+---
+
 ## Notes
 
-- Session: 2025-12-09
-- User will complete environment.json separately
-- Handoff format decision pending user review
+- Session: 2025-12-10
+- All architectural decisions finalized
+- First three skills updated for JSON handoffs
+- Ready for end-to-end testing
