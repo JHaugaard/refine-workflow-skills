@@ -2,16 +2,54 @@
 
 ## Current Focus
 
-**Workflow Skills Revision - deployment-advisor Gap Fixed**
+**Workflow Skills Revision - COMPLETE**
 
-Identified and fixed issue: `project-spinup` was conflating spinup location with deployment target. Now `deployment-advisor` explicitly asks where development will happen.
+All workflow skills refined with consistent architecture:
+- Hard boundaries at top of each skill
+- Phase 0 environment loading from `~/.claude/environment.json`
+- JSON handoffs for structured data exchange
+- Graceful degradation when prerequisites missing
 
 Plan file: `.docs/cozy-dazzling-pixel.md`
 Decisions file: `docs/workflow-refinement.md` (v2 - finalized)
 
 ---
 
-## Session 2025-12-10 (latest): development-environment-decision Added
+## Session 2025-12-11: Final Four Skills Refined
+
+### Completed
+
+11. **deploy-guide** - Full revision
+    - Added hard-boundaries block (EXECUTOR role, no strategy changes)
+    - Phase 0: Loads `infrastructure`, `credentials`, `established_choices`
+    - Phase 1: Reads upstream JSON handoffs (deployment-strategy.json)
+    - Output: `.docs/deployment-log.json` (new JSON handoff)
+    - Renumbered phases 0-6
+
+12. **ci-cd-implement** - Full revision
+    - Added hard-boundaries block (BUILDER role, no platform changes)
+    - Phase 0: Loads `deployment_options`, `external_accounts.github`
+    - Phase 1: Reads JSON handoffs (deployment-strategy.json, deployment-log.json)
+    - Added localhost check (no CI/CD for localhost projects)
+    - Renumbered phases 0-8
+
+13. **test-orchestrator** - Full revision
+    - Added hard-boundaries block (BUILDER/EDUCATOR role)
+    - Phase 0: Loads `established_choices.containerization`
+    - Phase 1: Reads JSON handoffs (tech-stack-decision.json, deployment-strategy.json)
+    - Renumbered phases 0-7
+    - Updated workflow-status and integration-notes
+
+14. **workflow-status** - Updated for JSON handoffs
+    - All document references changed from .md to .json
+    - Updated handoff-documents table
+    - Added json-handoff-structure section
+    - Updated phase-mapping, mode-detection, termination-detection
+    - Updated skill-specific-prerequisites table
+
+---
+
+## Session 2025-12-10 (earlier): development-environment-decision Added
 
 ### Completed
 
@@ -133,10 +171,10 @@ This ensures skills leverage existing infrastructure context instead of asking r
 | tech-stack-advisor | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/tech-stack-decision.json` |
 | deployment-advisor | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/deployment-strategy.json` |
 | project-spinup | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/project-foundation.json` |
-| test-orchestrator | ⏳ Pending | ⏳ Pending | ⏳ Pending | Next |
-| deploy-guide | ⏳ Pending | ⏳ Pending | ⏳ Pending | After test-orchestrator |
-| ci-cd-implement | ⏳ Pending | ⏳ Pending | ⏳ Pending | After deploy-guide |
-| workflow-status | ⏳ Pending | N/A | N/A | Read-only, needs to read JSON |
+| test-orchestrator | ✅ Done | ✅ Done | ✅ Done | Consumes JSON, outputs test-strategy.md |
+| deploy-guide | ✅ Done | ✅ Done | ✅ Done | Outputs `.docs/deployment-log.json` |
+| ci-cd-implement | ✅ Done | ✅ Done | ✅ Done | Consumes JSON, outputs workflows |
+| workflow-status | ✅ Done | ✅ Reads JSON | N/A | Read-only utility |
 
 ---
 
@@ -180,35 +218,31 @@ Skills access via `skill_data_access` block with graceful degradation when absen
 
 ## Suggested Prompt for Next Session
 
-```
-Continue workflow skills revision per docs/workflow-refinement.md (v2).
+```text
+Workflow skills revision COMPLETE per docs/workflow-refinement.md (v2).
 
-Read for context:
-- .claude/session-context.md (current state)
-- docs/workflow-refinement.md (finalized decisions)
+All 8 skills now have:
+- Hard boundaries (scope restrictions)
+- Phase 0 environment loading
+- JSON handoffs (producing or consuming)
+- Graceful degradation
 
-Status: Four skills fully updated + gap fix:
+Ready for testing the full workflow:
 - project-brief-writer → brief.json
 - tech-stack-advisor → tech-stack-decision.json
-- deployment-advisor → deployment-strategy.json (now includes development-environment-decision)
+- deployment-advisor → deployment-strategy.json
 - project-spinup → project-foundation.json
-
-Testing today: Re-run chatbot through deployment-advisor and project-spinup
-to confirm development-environment decision works correctly.
-
-Then: Roll out to remaining skills per .docs/cozy-dazzling-pixel.md
-- test-orchestrator
-- deploy-guide
-- ci-cd-implement
-- workflow-status
+- test-orchestrator → test-strategy.md (optional)
+- deploy-guide → deployment-log.json
+- ci-cd-implement → .github/workflows/
+- workflow-status (reads all JSON handoffs)
 ```
 
 ---
 
 ## Notes
 
-- Session: 2025-12-10
-- All architectural decisions finalized
-- Four skills fully updated (JSON + Phase 0 + hard boundaries)
-- Gap fixed: deployment-advisor now asks where to develop (localhost vs target)
-- User testing chatbot workflow tomorrow to confirm fix
+- Session: 2025-12-11
+- ALL workflow skills refined and complete
+- Consistent architecture across all skills
+- Ready for end-to-end testing
