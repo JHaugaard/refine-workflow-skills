@@ -2,6 +2,19 @@
 
 ## Current Focus
 
+**Platform Expansion - PLANNING PHASE**
+
+Moved to sub-project: `platform-refinements/`
+
+See:
+- `platform-refinements/.claude/session-context.md` — Session state
+- `platform-refinements/CLAUDE.md` — Sub-project overview
+- `docs/platform-expansion-roadmap.md` — Full impact assessment
+
+---
+
+## Previous Focus (Complete)
+
 **Workflow Skills Revision - COMPLETE**
 
 All workflow skills refined with consistent architecture:
