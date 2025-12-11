@@ -2,16 +2,37 @@
 
 ## Current Focus
 
-**Workflow Skills Revision - project-spinup Complete**
+**Workflow Skills Revision - deployment-advisor Gap Fixed**
 
-Four skills now updated. Ready to test project-spinup, then continue rollout.
+Identified and fixed issue: `project-spinup` was conflating spinup location with deployment target. Now `deployment-advisor` explicitly asks where development will happen.
 
 Plan file: `.docs/cozy-dazzling-pixel.md`
 Decisions file: `docs/workflow-refinement.md` (v2 - finalized)
 
 ---
 
-## Session 2025-12-10 (latest): project-spinup Refined
+## Session 2025-12-10 (latest): development-environment-decision Added
+
+### Completed
+
+10. **deployment-advisor** - Added Phase 3.5: development-environment-decision
+    - **Problem**: project-spinup assumed where to scaffold (localhost vs VPS) without asking
+    - **Solution**: deployment-advisor now asks after deployment target is confirmed
+    - Prompt: "Where will you develop? Localhost or [target] directly?"
+    - Decision factors for each choice documented
+    - Adds `development_environment` object to JSON schema
+    - Adds decision entry with `category: "development-environment"`
+    - Passes forward to project-spinup as locked decision
+
+### Design Rationale
+- Development location ≠ deployment target (distinct concerns)
+- Lightweight projects CAN spinup directly on VPS (simplicity)
+- Team/learning projects typically use localhost (full workflow)
+- Single decision, no new handoff document needed
+
+---
+
+## Session 2025-12-10 (earlier): project-spinup Refined
 
 ### Completed
 
@@ -166,13 +187,16 @@ Read for context:
 - .claude/session-context.md (current state)
 - docs/workflow-refinement.md (finalized decisions)
 
-Status: Four skills fully updated:
+Status: Four skills fully updated + gap fix:
 - project-brief-writer → brief.json
 - tech-stack-advisor → tech-stack-decision.json
-- deployment-advisor → deployment-strategy.json
+- deployment-advisor → deployment-strategy.json (now includes development-environment-decision)
 - project-spinup → project-foundation.json
 
-Next: Roll out to remaining skills per .docs/cozy-dazzling-pixel.md
+Testing today: Re-run chatbot through deployment-advisor and project-spinup
+to confirm development-environment decision works correctly.
+
+Then: Roll out to remaining skills per .docs/cozy-dazzling-pixel.md
 - test-orchestrator
 - deploy-guide
 - ci-cd-implement
@@ -186,4 +210,5 @@ Next: Roll out to remaining skills per .docs/cozy-dazzling-pixel.md
 - Session: 2025-12-10
 - All architectural decisions finalized
 - Four skills fully updated (JSON + Phase 0 + hard boundaries)
-- User testing project-spinup next
+- Gap fixed: deployment-advisor now asks where to develop (localhost vs target)
+- User testing chatbot workflow tomorrow to confirm fix

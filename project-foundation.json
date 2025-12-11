@@ -1,0 +1,83 @@
+{
+  "document_type": "project-foundation",
+  "version": "1.0",
+  "created": "2025-12-10",
+  "project": "chatbot",
+  "mode": "BALANCED",
+
+  "rationale": "Guided Setup foundation for a personal OpenRouter chatbot. Provides comprehensive CLAUDE.md with 9-step build prompts, Docker configuration, and directory structure. User builds incrementally while learning Next.js + Prisma patterns.",
+
+  "tech_stack": {
+    "frontend": "Next.js 14 (App Router)",
+    "backend": "Next.js API Routes",
+    "database": "SQLite via Prisma",
+    "styling": "Tailwind CSS",
+    "auth": "Password middleware (env var + cookie)",
+    "state": "React Context / Zustand",
+    "testing": "Vitest + React Testing Library"
+  },
+
+  "deployment": {
+    "target": "VPS1 (Hostinger)",
+    "approach": "docker",
+    "domain": "chatbot.haugaard.app",
+    "proxy": "Caddy (automatic HTTPS)",
+    "is_termination_point": false
+  },
+
+  "generated_files": [
+    {"path": "CLAUDE.md", "purpose": "Comprehensive project context with 9-step Guided Setup prompts"},
+    {"path": "docker-compose.yml", "purpose": "Local development environment"},
+    {"path": ".env.example", "purpose": "Environment variable template"},
+    {"path": ".gitignore", "purpose": "Git ignore patterns for Next.js + Prisma"},
+    {"path": "README.md", "purpose": "Quick start instructions"}
+  ],
+
+  "directory_structure": [
+    "src/app/",
+    "src/app/api/",
+    "src/components/ui/",
+    "src/components/chat/",
+    "src/lib/",
+    "src/styles/",
+    "prisma/",
+    "tests/",
+    "public/"
+  ],
+
+  "spinup_approach": "guided",
+
+  "guided_setup_steps": [
+    {"step": 1, "name": "Initialize Next.js Project", "creates": "Base scaffolding with TypeScript + Tailwind"},
+    {"step": 2, "name": "Set Up Prisma with SQLite", "creates": "Database layer for conversations"},
+    {"step": 3, "name": "Create Password Middleware", "creates": "Basic access protection"},
+    {"step": 4, "name": "Build OpenRouter API Integration", "creates": "Core API layer"},
+    {"step": 5, "name": "Create Chat UI Components", "creates": "Visual chat interface components"},
+    {"step": 6, "name": "Wire Up the Chat Page", "creates": "Functional chat with streaming"},
+    {"step": 7, "name": "Add Conversation History", "creates": "Sidebar and persistence"},
+    {"step": 8, "name": "Create Production Dockerfile", "creates": "VPS deployment config"},
+    {"step": 9, "name": "Polish and Test", "creates": "Edge cases, UX, tests"}
+  ],
+
+  "environment_integration": {
+    "registry_loaded": true,
+    "services_referenced": ["caddy"],
+    "endpoints_configured": [],
+    "established_choices_applied": ["docker", "caddy", "git/github"]
+  },
+
+  "workflow_status": {
+    "completed_phases": ["project-brief-writer", "tech-stack-advisor", "deployment-advisor", "project-spinup"],
+    "is_termination_point": false,
+    "next_phases": ["(build features)", "test-orchestrator", "deploy-guide", "ci-cd-implement"]
+  },
+
+  "next_actions": [
+    "Open CLAUDE.md and read 'Next Steps (Guided Setup)' section",
+    "Copy Step 1 prompt and paste to Claude Code to initialize Next.js",
+    "Follow guided steps 1-9 incrementally",
+    "When ready to deploy, run deploy-guide skill"
+  ],
+
+  "handoff_to": ["test-orchestrator", "deploy-guide", "ci-cd-implement"]
+}
